@@ -5,3 +5,4 @@ Hana Gonzales Kaldager
 Tobias Lund Brekkå
 Guro Skogly
 Tharsa Selvam
+Peder August Hasseleng
