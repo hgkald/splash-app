@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team22.badeapp.ui.theme
+package no.uio.ifi.in2000.team22.bade_app.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

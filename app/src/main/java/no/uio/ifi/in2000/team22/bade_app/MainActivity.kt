@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team22.badeapp
+package no.uio.ifi.in2000.team22.bade_app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,7 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import no.uio.ifi.in2000.team22.badeapp.ui.theme.BadeappTheme
+import no.uio.ifi.in2000.team22.bade_app.ui.theme.BadeappTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Team 22")
+                    Greeting("Android")
                 }
             }
         }

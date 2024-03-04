@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team22.badeapp
+package no.uio.ifi.in2000.team22.bade_app
 
 import org.junit.Test
 

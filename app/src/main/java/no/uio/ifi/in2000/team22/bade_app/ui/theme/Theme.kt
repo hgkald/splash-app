@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team22.badeapp.ui.theme
+package no.uio.ifi.in2000.team22.bade_app.ui.theme
 
 import android.app.Activity
 import android.os.Build

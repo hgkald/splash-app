@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "no.uio.ifi.in2000.team22.badeapp"
+    namespace = "no.uio.ifi.in2000.team22.bade_app"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "no.uio.ifi.in2000.team22.badeapp"
+        applicationId = "no.uio.ifi.in2000.team22.bade_app"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
