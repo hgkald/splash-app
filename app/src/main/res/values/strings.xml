@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">badeapp</string>
+    <string name="mapbox_key">***REMOVED***</string>
 </resources>
