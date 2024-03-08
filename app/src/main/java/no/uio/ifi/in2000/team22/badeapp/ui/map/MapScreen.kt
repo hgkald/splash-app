@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -18,6 +19,8 @@ import com.mapbox.maps.extension.compose.annotation.generated.CircleAnnotation
 @Preview
 @Composable
 fun MapScreen(mapScreenViewModel: MapScreenViewModel = viewModel()){
+
+    var swimSpotUiState = mapScreenViewModel.swimSpotUiState.collectAsState()
     val mapViewportState = rememberMapViewportState {
         setCameraOptions {
             zoom(10.0)
@@ -43,5 +46,13 @@ fun MapScreen(mapScreenViewModel: MapScreenViewModel = viewModel()){
             circleOpacity = 10.0,
             circleColorInt = Color.RED
         )
+        swimSpotUiState.value.swimSpotList.forEach {
+            CircleAnnotation(
+                point = Point.fromLngLat(it.lon, it.lat),
+                circleRadius = 10.0,
+                circleOpacity = 10.0,
+                circleColorInt = Color.BLUE
+            )
+        }
     }
 }
