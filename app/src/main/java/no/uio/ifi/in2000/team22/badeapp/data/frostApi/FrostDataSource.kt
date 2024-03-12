@@ -6,9 +6,8 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.serialization.gson.gson
-import kotlin.math.max
+import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimSpot
 
 class FrostDataSource {
 
@@ -32,10 +31,13 @@ class FrostDataSource {
             }
         }
 
-    suspend fun getData(maxDist : Double, maxCount : Int, lon : Double, lat : Double): FrostData{
+    suspend fun getData(maxDist: Double, maxCount: Int, lon: Double, lat: Double): FrostData {
         val response = client.get(path) {
-            url{
-                parameters.append("nearest","""{"maxdist":$maxDist,"maxcount":$maxCount,"points":[{"lon":$lon,"lat":$lat}]}""")
+            url {
+                parameters.append(
+                    "nearest",
+                    """{"maxdist":$maxDist,"maxcount":$maxCount,"points":[{"lon":$lon,"lat":$lat}]}"""
+                )
 
             }
         }
@@ -43,16 +45,22 @@ class FrostDataSource {
         val body = response.body<FrostData>()
         return body
     }
-    suspend fun getNearbyFromCoords(maxDist : Double, maxCount : Int, lon : Double, lat : Double): List<Badested>{
+
+    suspend fun getNearbyFromCoords(
+        maxDist: Double,
+        maxCount: Int,
+        lon: Double,
+        lat: Double
+    ): List<SwimSpot> {
         val data = FrostDataSource()
         val verdi = data.getData(maxDist, maxCount, lon, lat)
-        val badesteder = mutableListOf<Badested>()
+        val badesteder = mutableListOf<SwimSpot>()
 
         for (badestedene in verdi.data.tseries) {
             val name = badestedene.header.extra.name
             val lon = badestedene.header.extra.pos.lon.toDouble()
             val lat = badestedene.header.extra.pos.lat.toDouble()
-            val badested = Badested(name, lon, lat)
+            val badested = SwimSpot(name, lon, lat)
             badesteder.add(badested)
 
         }
