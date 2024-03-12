@@ -6,24 +6,57 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
+import io.ktor.http.URLProtocol
+import io.ktor.http.path
 import io.ktor.serialization.gson.gson
+import no.uio.ifi.in2000.team22.badeapp.data.FrostAPI
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimSpot
 
+private data class Data(
+    val tseries: List<Tseries>
+)
+
+private data class Tseries(
+    val header: Header
+)
+
+private data class Header(
+    val id: Id,
+    val extra: Extra
+)
+
+private data class Id(
+    val buoyid: String,
+    val parameter: String,
+    val source: String
+)
+
+private data class Extra(
+    val name: String,
+    val pos: Pos
+)
+
+
+private data class Pos(
+    val lat: String,
+    val lon: String
+)
+
+
+private data class FrostData(
+    val data: Data
+)
+
 class FrostDataSource {
-
-    //TESTDATA
-//    val maxDist : Double = 10.0
-//    val maxCount : Int = 3
-//    val lon : Double = 5.314803
-//    val lat : Double = 60.396388
-
     private val path = ""
     private val client =
         HttpClient {
             defaultRequest {
-                url("https://havvarsel-frost.met.no/api/v1/obs/badevann/get")
-//
-
+                url {
+                    protocol = URLProtocol.HTTPS
+                    host = FrostAPI.HOST
+                    path(FrostAPI.SWIMSPOTS_PATH)
+                }
             }
 
             install(ContentNegotiation) {
@@ -31,7 +64,43 @@ class FrostDataSource {
             }
         }
 
-    suspend fun getData(maxDist: Double, maxCount: Int, lon: Double, lat: Double): FrostData {
+    /**
+     * Retrieves all swimspots from the FrostAPI.
+     *
+     * @return a list of the class SwimSpot
+     */
+    suspend fun getAllSwimSpots(): List<SwimSpot> {
+        val response: FrostData = try {
+            client.get("").body<FrostData>()
+        } catch (e: Exception) {
+            Log.e("FrostDataSource", "failed to get data from Frost: ${e.message}")
+            return emptyList<SwimSpot>()
+        }
+
+        val swimspots: List<SwimSpot> = try {
+            response.data.tseries
+                .filter { it -> it.header.extra.pos.lat != "None" || it.header.extra.pos.lat != "None" }
+                .map { it ->
+                    SwimSpot(
+                        name = it.header.extra.name,
+                        lat = it.header.extra.pos.lat.toDouble(),
+                        lon = it.header.extra.pos.lon.toDouble()
+                    )
+                }
+        } catch (e: Exception) {
+            Log.e("FrostDataSource", "failed to parse data to SwimSpots: ${e.message}")
+            emptyList<SwimSpot>()
+        }
+
+        return swimspots
+    }
+
+    private suspend fun getData(
+        maxDist: Double,
+        maxCount: Int,
+        lon: Double,
+        lat: Double
+    ): FrostData {
         val response = client.get(path) {
             url {
                 parameters.append(
@@ -65,19 +134,5 @@ class FrostDataSource {
 
         }
         return badesteder
-//              TEST INFO
-//        for (badested in verdi.data.tseries) {
-//            println("Name: ${badested.header.extra.name}")
-//            println("Lon: ${badested.header.extra.pos.lon}")
-//            println("Lat: ${badested.header.extra.pos.lat}")
-//        }
-//    println(verdi)
     }
 }
-
-
-// TEST FUNCTION
-//suspend fun main(){
-//    val frostDataSource = FrostDataSource()
-//    println(frostDataSource.getNearbyFromCoords(frostDataSource.maxDist, frostDataSource.maxCount, frostDataSource.lon, frostDataSource.lat))
-//}

@@ -3,7 +3,12 @@ package no.uio.ifi.in2000.team22.badeapp.data.frostApi
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimSpot
 
 class FrostRepository {
-    val frostDataSource = FrostDataSource()
+    private val frostDataSource = FrostDataSource()
+
+    suspend fun getAllSwimspots(): List<SwimSpot> {
+        return frostDataSource.getAllSwimSpots()
+    }
+
     suspend fun getBadeplasser(
         maxDist: Double,
         maxCount: Int,
