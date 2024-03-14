@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team22.badeapp.ui.map
+package no.uio.ifi.in2000.team22.badeapp.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,7 +14,7 @@ data class SwimSpotUiState(
     val swimSpotList: List<SwimSpot> = emptyList<SwimSpot>()// Swim Spot
 )
 
-class MapScreenViewModel() : ViewModel() {
+class HomeScreenViewModel() : ViewModel() {
     private val _swimSpotUiState = MutableStateFlow(SwimSpotUiState())
     val swimSpotUiState: StateFlow<SwimSpotUiState> = _swimSpotUiState.asStateFlow()
     val frostRepo = FrostRepository()
