@@ -1,13 +1,14 @@
-package no.uio.ifi.in2000.team22.badeapp.data
+package no.uio.ifi.in2000.team22.badeapp.data.enTur
+
 
 data class Root (
-    val genCoding: GenCoding,
+    val geoCoding: GeoCoding,
     val type: String,
-    val features: Feature,
+    val features: List<Feature>,
     val bbox: List<Double>
 )
 
-data class GenCoding(
+data class GeoCoding(
     val version: String,
     val attribution: String,
     val query : Query,
@@ -22,15 +23,28 @@ data class Feature(
 )
 
 data class Query(
-    val layers : List<String>, // annerledes på bruno/ postman og nettsiden
+    val layers : List<String>,
     val sources : List<String>,
     val size : Int,
+    val private : Boolean,
+    val point : Point,
+    val boundary: Boundary,
+    val querySize : Int
+)
+
+data class Point(
+    val lat : Double,
+    val lon : Double
+)
+
+data class Boundary (
+    val circle: Circle
+)
+
+data class Circle(
     val lat : Double,
     val lon : Double,
-    val boundary_circle_radius : Int, // ??
-    val boundary_circle_lat : Double,
-    val boundary_circle_lon : Double,
-    val querySize : Int
+    val radius : Int
 )
 
 data class Engine (
@@ -41,13 +55,24 @@ data class Engine (
 
 data class Geometry(
     val type : String,
-    val coordinates: List<Double> // SAMME som oppe ^^
+    val coordinates: List<Double>
 )
 
 data class Properties(
     val gid : String,
     val layer : String,
+    val source: String,
+    val name : String,
     val confidence : Double,
     val distance : Double,
+    val label : String,
+    val category : List<String>
+)
 
-    )
+
+data class StopPlace(
+    val lat : Double,
+    val lon : Double,
+    val name : String,
+    val type : List<String>
+)
