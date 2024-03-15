@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team22.badeapp.data.frostApi.FrostRepository
+import no.uio.ifi.in2000.team22.badeapp.data.frostApi.SwimSpotOverviewRepository
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimSpot
 
 data class SwimSpotUiState(
@@ -26,7 +27,7 @@ class HomeScreenViewModel() : ViewModel() {
     init {
         viewModelScope.launch {
             _swimSpotUiState.update {
-                it.copy(swimSpotList = getAllSwimSpots())
+                it.copy(swimSpotList = SwimSpotOverviewRepository.swimSpots)
             }
         }
 
