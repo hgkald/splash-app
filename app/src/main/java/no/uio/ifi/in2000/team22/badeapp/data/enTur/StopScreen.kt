@@ -30,7 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun StoppScreen () {
     val view : EnTurViewModel = viewModel()
-    val info by view.stops.collectAsState()
+    val info by view.stopsUIstate.collectAsState()
     val stop : StopPlace? = info.stoppList.firstOrNull()
 
     LaunchedEffect(Unit) {
