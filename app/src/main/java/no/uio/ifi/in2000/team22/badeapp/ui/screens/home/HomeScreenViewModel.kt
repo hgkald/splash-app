@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team22.badeapp.data.frostApi.FrostRepository
+import no.uio.ifi.in2000.team22.badeapp.data.frostApi.SwimSpotOverviewRepository
 import no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi.LocationforecastDataSource
 import no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi.LocationforecastRepository
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.CurrentWeather
@@ -41,7 +42,7 @@ class HomeScreenViewModel : ViewModel() {
     }
 
     val locationforecastRepo = LocationforecastRepository(LocationforecastDataSource())
-    suspend fun getCurrentWeather(lat:Double, lon: Double): CurrentWeather {
+    suspend fun getCurrentWeather(lat: Double, lon: Double): CurrentWeather {
         return locationforecastRepo.fetchCurrentWeather(lat, lon)
     }
 
@@ -55,7 +56,7 @@ class HomeScreenViewModel : ViewModel() {
 
         viewModelScope.launch {
             _swimSpotUiState.update {
-                it.copy(swimSpotList = getSwimSpots(lon, lat))
+                it.copy(swimSpotList = SwimSpotOverviewRepository.swimSpots)
             }
             _weatherUiState.update {
                 it.copy(currentWeather = getCurrentWeather(lat, lon))
