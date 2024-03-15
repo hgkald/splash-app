@@ -129,7 +129,7 @@ class FrostDataSource {
             val name = badestedene.header.extra.name
             val lon = badestedene.header.extra.pos.lon.toDouble()
             val lat = badestedene.header.extra.pos.lat.toDouble()
-            val badested = SwimSpot(name, lon, lat)
+            val badested = SwimSpot(name = name, lon = lon, lat = lat)
             badesteder.add(badested)
 
         }
