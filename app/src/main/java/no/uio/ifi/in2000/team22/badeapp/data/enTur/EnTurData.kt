@@ -71,8 +71,9 @@ data class Properties(
 
 
 data class StopPlace(
-    val lat : Double,
-    val lon : Double,
-    val name : String,
-    val type : List<String>
+    val lat: Double,
+    val lon: Double,
+    val name: String,
+    val category: List<String>,
+    val label : String
 )
