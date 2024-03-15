@@ -41,7 +41,6 @@ import no.uio.ifi.in2000.team22.badeapp.ui.components.WeatherDialog
 import no.uio.ifi.in2000.team22.badeapp.ui.components.WeatherIcon
 
 
-
 @OptIn(MapboxExperimental::class)
 @Composable
 fun HomeScreen(navcontroller : NavController, homeScreenViewModel: HomeScreenViewModel = viewModel()) {
