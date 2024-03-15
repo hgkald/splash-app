@@ -19,16 +19,14 @@ class HomeScreenViewModel() : ViewModel() {
     val swimSpotUiState: StateFlow<SwimSpotUiState> = _swimSpotUiState.asStateFlow()
     val frostRepo = FrostRepository()
 
-    suspend fun getSwimSpots(lat: Double, lon: Double): List<SwimSpot> {
-        return frostRepo.getBadeplasser(10.0, 5, lon, lat)
-
-
+    suspend fun getAllSwimSpots(): List<SwimSpot> {
+        return frostRepo.getAllSwimspots()
     }
 
     init {
         viewModelScope.launch {
             _swimSpotUiState.update {
-                it.copy(swimSpotList = getSwimSpots(lon = 10.7215, lat = 59.9464))
+                it.copy(swimSpotList = getAllSwimSpots())
             }
         }
 
