@@ -13,13 +13,19 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 @Composable
-fun BadeAppBottomAppBar() {
+fun BadeAppBottomAppBar(navcontroller : NavController) {
+
     BottomAppBar {
         for (i in 1..4) {
             IconButton(
-                onClick = { /*TODO*/ }, //navigation to other screens
+                onClick = {
+                    if(i == 2)navcontroller.navigate("search")
+                    if(i == 3)navcontroller.navigate("home")
+                    if(i == 4)navcontroller.navigate("favorites")
+                },
                 modifier = Modifier
                     .fillMaxHeight()
                     .width(100.dp)

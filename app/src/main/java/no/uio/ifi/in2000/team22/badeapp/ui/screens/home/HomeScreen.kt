@@ -10,7 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapboxExperimental
 import com.mapbox.maps.extension.compose.MapEvents
@@ -22,9 +24,8 @@ import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppTopAppBar
 
 @OptIn(MapboxExperimental::class)
-@Preview
 @Composable
-fun HomeScreen(homeScreenViewModel: HomeScreenViewModel = viewModel()) {
+fun HomeScreen(navcontroller : NavController, homeScreenViewModel: HomeScreenViewModel = viewModel()) {
     val swimSpotUiState = homeScreenViewModel.swimSpotUiState.collectAsState()
     val mapViewportState = rememberMapViewportState {
         setCameraOptions {
@@ -37,14 +38,16 @@ fun HomeScreen(homeScreenViewModel: HomeScreenViewModel = viewModel()) {
 
     Scaffold(
         topBar = { BadeAppTopAppBar() },
-        bottomBar = { BadeAppBottomAppBar() }
+        bottomBar = { BadeAppBottomAppBar(navcontroller) }
     ) { paddingValues ->
         MapboxMap(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize(),
             mapViewportState = mapViewportState,
-            scaleBarSettings = ScaleBarSettings { enabled },
+            scaleBarSettings = ScaleBarSettings {
+                enabled;
+                textSize = 25.0F}, //correct UU?
             mapEvents = MapEvents(
                 onCameraChanged = {
                     Log.i("MAP", it.cameraState.zoom.toString())
