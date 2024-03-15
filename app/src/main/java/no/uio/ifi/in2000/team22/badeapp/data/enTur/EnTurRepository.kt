@@ -1,9 +1,11 @@
 package no.uio.ifi.in2000.team22.badeapp.data.enTur
 
-class EnTurRepository {
-    val data = EnTurDataSource()
+import android.util.Log
 
-    suspend fun getStops (lat: Double, lon: Double, radius: Int, size: Int): List<StopPlace> {
+class EnTurRepository {
+    val data : EnTurDataSource =  EnTurDataSource()
+
+    suspend fun getStops (lat: Double, lon: Double, radius: Int, size: Int,): List<StopPlace> {
         return data.getStops(lat,lon,radius,size)
     }
 

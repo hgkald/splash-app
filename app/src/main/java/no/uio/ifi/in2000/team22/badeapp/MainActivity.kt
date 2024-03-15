@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.search.SearchScreen
+import no.uio.ifi.in2000.team22.badeapp.data.enTur.StoppScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.theme.BadeappTheme
 
 
@@ -33,6 +34,7 @@ class MainActivity : ComponentActivity() {
                         composable("search") { SearchScreen(navcontroller) }
                         //settings?
                     }
+                    //StoppScreen()
                 }
             }
         }

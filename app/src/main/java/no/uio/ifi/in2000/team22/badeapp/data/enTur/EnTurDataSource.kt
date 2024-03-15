@@ -45,9 +45,12 @@ class EnTurDataSource {
             val coordinates = it.geometry.coordinates
             val name = properties.name
             val type = properties.category
-            Log.d("EnTurDataSource", "HTTP status : 22${name}")
+            val label = properties.label
 
-            stops.add(StopPlace(coordinates[1], coordinates[0],name,type ))
+
+            stops.add(StopPlace(coordinates[1], coordinates[0],name,type, label))
+            Log.d("EnTurDataSource", "Stop : $type + $name")
+
         }
         return stops
     }
