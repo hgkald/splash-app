@@ -10,23 +10,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimSpot
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppTopAppBar
 
 @Composable
-@Preview(showSystemUi = true)
-fun SwimSpotPreview() {
-    SwimSpotScreen()
-}
-
-@Composable
-fun SwimSpotScreen(swimSpotViewModel: SwimSpotViewModel = viewModel()) {
+fun SwimSpotScreen(navcontroller :  NavController, swimSpotViewModel: SwimSpotViewModel = viewModel()) {
     val spot: SwimSpot = SwimSpot(name = "Sørenga", lat = 10.0, lon = 20.1)
 
     Scaffold(
         topBar = { BadeAppTopAppBar() },
-        bottomBar = { BadeAppBottomAppBar() }
+        bottomBar = { BadeAppBottomAppBar(navcontroller) }
     ) {
         Column(
             modifier = Modifier
