@@ -1,9 +1,10 @@
 package no.uio.ifi.in2000.team22.badeapp.data.metalert
 
+import no.uio.ifi.in2000.team22.badeapp.model.alerts.Alert
+
 
 class MetAlertRepository(
     private val metAlertDataSource : MetAlertDataSource = MetAlertDataSource()
-
 ){
     suspend fun getAlertList() : List<Alert> {
         return metAlertDataSource.fetchAlerts()
@@ -20,7 +21,6 @@ class MetAlertRepository(
         return alerts.isNotEmpty()
     }
 
-
     // Returns a list with lists of coordinates where in the inner most lists index 0 is longtitude
     // and index 1 is latitude. Each list of tuples is a polygon. The space within the polygon is the
     // alerted area.
@@ -28,9 +28,13 @@ class MetAlertRepository(
         val info = getAlertList()
         var list : List<List<List<Double>>> = emptyList()
         info.forEach {
-            list += it.geograficArea
+            list += it.geographicArea
         }
         return list
+    }
+
+    suspend fun getAlertsForPosition(lat: Double, lon: Double) : List<Alert>{
+        return metAlertDataSource.fetchAlertsForPosition(lat, lon)
     }
 }
 
@@ -41,7 +45,7 @@ suspend fun main(){
     rep.getAlertList().forEach {
         println(it.areaName)
         println(it.description)
-        println(it.geograficArea)
+        println(it.geographicArea)
         println(it.riskMatrixColor)
         println()
     }

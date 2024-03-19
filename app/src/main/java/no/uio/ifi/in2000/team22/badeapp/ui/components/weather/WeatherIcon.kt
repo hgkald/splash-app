@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team22.badeapp.ui.components
+package no.uio.ifi.in2000.team22.badeapp.ui.components.weather
 
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import no.uio.ifi.in2000.team22.badeapp.R
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.CurrentWeather
+
 
 @Composable
 fun WeatherIcon(weather: CurrentWeather, modifier: Modifier) {

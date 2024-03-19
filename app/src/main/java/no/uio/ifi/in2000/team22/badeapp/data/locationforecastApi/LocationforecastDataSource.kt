@@ -21,7 +21,7 @@ class LocationforecastDataSource {
                 url {
                     protocol = URLProtocol.HTTPS
                     host = MetAPI.HOST
-                    path(MetAPI.LOCATIONFORECAST_PATH, MetAPI.LOCATIONFORECAST_TYPE)
+                    path(MetAPI.LocationForecast.PATH, MetAPI.LocationForecast.TYPE)
                 }
             }
 

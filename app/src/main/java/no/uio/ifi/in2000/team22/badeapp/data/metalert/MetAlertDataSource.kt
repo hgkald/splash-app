@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team22.badeapp.data.metalert
 
+import android.util.Log
 import com.google.gson.annotations.SerializedName
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -7,74 +8,64 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.http.URLProtocol
+import io.ktor.http.path
 import io.ktor.serialization.gson.gson
+import no.uio.ifi.in2000.team22.badeapp.data.MetAPI
+import no.uio.ifi.in2000.team22.badeapp.model.alerts.Alert
+import no.uio.ifi.in2000.team22.badeapp.model.alerts.RiskMatrixColor
 
 private data class MetAlert(
     val features : List<Feature>,
     val lang : String,
     val lastChange : String
-)
+) {
+    data class Feature(
+        val properties: Properties,
+        val geometry: Geometry,
+        @SerializedName("when") val timeFrame : TimeFrame,
+    ) {
+        data class Properties(
+            val area : String,
+            val awarenessResponse : String,
+            val awarenessLevel : String,
+            val certainty : String,
+            val consequences : String,
+            val description : String,
+            val event : String,
+            val eventAwarenessName : String,
+            val instruction : String,
+            val severity : String,
+            val title : String,
+            val riskMatrixColor : RiskMatrixColor
+        )
 
-private class Feature(
-    val properties: Properties,
-    val geometry: Geometry,
-    @SerializedName("when") val timeFrame : TimeFrame,
-)
+        data class Geometry(
+            val type : String,
+            val coordinates : Any
+        )
 
-private data class Geometry(
-    val type : String,
-    val coordinates : Any
-)
-
-enum class RiskMatrixColor {
-    Yellow, Orange, Red
+        data class TimeFrame(
+            val interval : List<String>
+        )
+    }
 }
-
-private data class Properties(
-    val area : String,
-    val awarenessResponse : String,
-    val awarenessLevel : String,
-    val certainty : String,
-    val consequences : String,
-    val description : String,
-    val eventAwarenessName : String,
-    val instruction : String,
-    val severity : String,
-    val title : String,
-    val riskMatrixColor : RiskMatrixColor
-)
-
-private data class TimeFrame(
-    val interval : List<String>
-)
-
-data class Alert(
-    val geograficArea : List<List<List<Double>>>,
-    val areaName : String,
-    val awarenessResponse : String,
-    val awarenessLevel : String?,
-    val certainty : String,
-    val consequences : String,
-    val description : String,
-    val eventAwarenessName : String,
-    val instruction : String,
-    val severity : String,
-    val title : String,
-    val timeFrame: List<String>,
-    val riskMatrixColor: RiskMatrixColor,
-    val lastChange: String,
-)
-
 
 class MetAlertDataSource {
     //private val path = "weatherapi/metalerts/2.0/test.json" // Test Path
-    private val path = "weatherapi/metalerts/2.0/current.json"
+    //private val path = "weatherapi/metalerts/2.0/current.json"
+
+    private val endpoint = MetAPI.MetAlerts.TEST_ENDPOINT
 
     private val client =
         HttpClient {
             defaultRequest {
-                url("https://gw-uio.intark.uh-it.no/in2000/")
-                header("X-Gravitee-API-Key", "1257d958-d771-4767-abb0-9d78c0f45025")
+                header(MetAPI.API_KEY_NAME, MetAPI.API_KEY)
+                url {
+                    protocol = URLProtocol.HTTPS
+                    host = MetAPI.HOST
+                    path(MetAPI.MetAlerts.PATH)
+                }
             }
 
             install(ContentNegotiation) {
@@ -83,15 +74,25 @@ class MetAlertDataSource {
         }
 
     private suspend fun fetchBody(): MetAlert {
-        val response = client.get(path)
-        return response.body<MetAlert>()
+        return try {
+            val response = client.get(endpoint)
+            response.body<MetAlert>()
+        } catch (e: Exception) {
+            Log.d("MetAlertDataSource", e.message.toString())
+            Log.d("MetAlertDataSource", e.stackTrace.toString())
+            MetAlert(
+                features = emptyList(),
+                lang = "",
+                lastChange = ""
+            )
+        }
     }
 
     private fun toAlerts(metAlert: MetAlert) : List<Alert>{
-        var list : List<Alert> = emptyList()
-        metAlert.features.forEach{
-            list += listOf(Alert(
-                geograficArea = if (it.geometry.type.lowercase() == "polygon"){ // Type is Polygon
+        val list : List<Alert> = //emptyList()
+        metAlert.features.map{
+            Alert(
+                geographicArea = if (it.geometry.type.lowercase() == "polygon"){ // Type is Polygon
                     mutableListOf(it.geometry.coordinates as List<List<Double>>)
                 } else { // Type is MultiPolygon
                     it.geometry.coordinates as List<List<List<Double>>>
@@ -102,6 +103,7 @@ class MetAlertDataSource {
                 certainty = it.properties.certainty,
                 consequences = it.properties.consequences,
                 description = it.properties.description,
+                event = it.properties.event,
                 eventAwarenessName = it.properties.eventAwarenessName,
                 instruction = it.properties.instruction,
                 severity = it.properties.severity,
@@ -109,7 +111,7 @@ class MetAlertDataSource {
                 timeFrame = listOf(it.timeFrame.interval[0], it.timeFrame.interval[1]),
                 riskMatrixColor = it.properties.riskMatrixColor,
                 lastChange = metAlert.lastChange,
-            ))
+            )
         }
         return list
     }
@@ -118,11 +120,23 @@ class MetAlertDataSource {
         return toAlerts(fetchBody())
     }
 
-
     suspend fun fetchAlertsForPosition(lat : Double, long : Double) : List<Alert> {
-        val response = client.get(path + "?lat=${lat}&lon=${long}")
-        val body = response.body<MetAlert>()
-        return toAlerts(body)
+        try {
+            val response = client.get {
+                url {
+                    path(endpoint)
+                    parameters.append("lat", lat.toString())
+                    parameters.append("lon", long.toString())
+                }
+            }
+            val body = response.body<MetAlert>()
+            return toAlerts(body)
+        }
+        catch (e: Exception) {
+            Log.d("MetAlertDataSource", e.message.toString())
+            Log.d("MetAlertDataSource", e.stackTrace.toString())
+            return emptyList()
+        }
     }
 
     suspend fun fetchLastChanged() : String{

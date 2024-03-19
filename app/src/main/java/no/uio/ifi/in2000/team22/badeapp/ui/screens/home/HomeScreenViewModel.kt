@@ -11,6 +11,9 @@ import no.uio.ifi.in2000.team22.badeapp.data.frostApi.FrostRepository
 import no.uio.ifi.in2000.team22.badeapp.data.frostApi.SwimSpotOverviewRepository
 import no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi.LocationforecastDataSource
 import no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi.LocationforecastRepository
+import no.uio.ifi.in2000.team22.badeapp.data.metalert.MetAlertDataSource
+import no.uio.ifi.in2000.team22.badeapp.data.metalert.MetAlertRepository
+import no.uio.ifi.in2000.team22.badeapp.model.alerts.Alert
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.CurrentWeather
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimSpot
 
@@ -27,7 +30,9 @@ data class WeatherUiState(
         windFromDirection = null,
         uvIndex = null,
         precipitationNextHour = null
-    )
+    ),
+
+    val metAlerts: List<Alert> = emptyList(),
 )
 
 class HomeScreenViewModel : ViewModel() {
@@ -46,6 +51,11 @@ class HomeScreenViewModel : ViewModel() {
         return locationforecastRepo.fetchCurrentWeather(lat, lon)
     }
 
+    val metAlertRepo = MetAlertRepository(MetAlertDataSource())
+    suspend fun getMetAlerts(lat: Double, lon: Double): List<Alert> {
+        return metAlertRepo.getAlertsForPosition(lat, lon)
+    }
+
     suspend fun getAllSwimSpots(): List<SwimSpot> {
         return frostRepo.getAllSwimspots()
     }
@@ -59,7 +69,9 @@ class HomeScreenViewModel : ViewModel() {
                 it.copy(swimSpotList = SwimSpotOverviewRepository.swimSpots)
             }
             _weatherUiState.update {
-                it.copy(currentWeather = getCurrentWeather(lat, lon))
+                it.copy(
+                    currentWeather = getCurrentWeather(lat, lon),
+                    metAlerts = getMetAlerts(lat, lon))
             }
         }
 

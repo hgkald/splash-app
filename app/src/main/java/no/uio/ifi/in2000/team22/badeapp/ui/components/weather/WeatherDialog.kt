@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team22.badeapp.ui.components
+package no.uio.ifi.in2000.team22.badeapp.ui.components.weather
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import no.uio.ifi.in2000.team22.badeapp.model.alerts.Alert
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.CurrentWeather
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.WeatherUiState
 
@@ -31,12 +33,12 @@ fun WeatherDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(250.dp)
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.elevatedCardColors(),
         ) {
             val weather = weatherUiState.value.currentWeather
-
+            val metAlerts = weatherUiState.value.metAlerts
             Column (
                 modifier = Modifier.padding(12.dp),
                 verticalArrangement = Arrangement.Center,
@@ -47,7 +49,7 @@ fun WeatherDialog(
 
                 PrecipitationText(weather)
 
-                MetAlertInfo()
+                MetAlertInfo(metAlerts)
             }
         }
     }
@@ -62,11 +64,6 @@ fun WeatherDialogTitle() {
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight(600)
     )
-}
-
-@Composable
-fun MetAlertInfo() {
-
 }
 
 @Composable
@@ -91,7 +88,7 @@ fun TemperatureAndIcon(weather: CurrentWeather) {
             weather = weather,
             modifier = Modifier
                 .height(60.dp)
-                .padding(12.dp)
+                .padding(8.dp)
         )
     }
 }
@@ -106,11 +103,42 @@ fun PrecipitationText(weather: CurrentWeather) {
         Text(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp, 0.dp)
+                .padding(4.dp, 0.dp)
                 .wrapContentSize(Alignment.Center),
             text = precipText,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )
+    }
+}
+
+
+@Composable
+fun MetAlertInfo(alerts: List<Alert>) {
+    Card (
+        modifier = Modifier
+            .padding(12.dp)
+            .fillMaxWidth()
+        ,
+        shape = RoundedCornerShape(16.dp),
+    ){
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ){
+            AlertIcon(alert = alerts[0], modifier = Modifier.padding(12.dp))
+
+            Column {
+                Text (
+                    text = alerts[0].eventAwarenessName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight(600)
+                )
+                Text (
+                    text = "Level ${alerts[0].riskMatrixColor}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
     }
 }

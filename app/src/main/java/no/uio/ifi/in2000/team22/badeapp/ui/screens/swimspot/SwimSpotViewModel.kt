@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import no.uio.ifi.in2000.team22.badeapp.data.metalert.Alert
+import no.uio.ifi.in2000.team22.badeapp.model.alerts.Alert
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimSpot
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.SwimSpotUiState
 
