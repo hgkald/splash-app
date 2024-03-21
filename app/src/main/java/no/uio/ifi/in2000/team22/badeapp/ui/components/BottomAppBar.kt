@@ -16,15 +16,19 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
 @Composable
-fun BadeAppBottomAppBar(navcontroller : NavController) {
+fun BadeAppBottomAppBar(navcontroller: NavController) {
 
     BottomAppBar {
         for (i in 1..4) {
             IconButton(
                 onClick = {
-                    if(i == 2)navcontroller.navigate("search")
-                    if(i == 3)navcontroller.navigate("home")
-                    if(i == 4)navcontroller.navigate("favorites")
+                    if (i == 2) navcontroller.navigate("search")
+                    if (i == 3) navcontroller.navigate("home") {
+                        popUpTo("home")
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                    if (i == 4) navcontroller.navigate("favorites")
                 },
                 modifier = Modifier
                     .fillMaxHeight()
