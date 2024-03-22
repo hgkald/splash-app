@@ -10,7 +10,7 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import io.ktor.serialization.gson.gson
 import no.uio.ifi.in2000.team22.badeapp.data.MetAPI
-import no.uio.ifi.in2000.team22.badeapp.model.forecast.CurrentWeather
+import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.Locationforecast
 
 class LocationforecastDataSource {
@@ -40,30 +40,38 @@ class LocationforecastDataSource {
             }
             response.body<Locationforecast>()
         } catch (e: Exception) {
-            Log.d("LocationforecastDataSource", e.message.toString())
-            Log.d("LocationforecastDataSource", e.stackTrace.toString())
+            Log.e("LocationforecastDataSource", e.message.toString())
+            Log.e("LocationforecastDataSource", e.stackTrace.toString())
             null
         }
     }
 
-    suspend fun fetchCurrentWeather(lat: Double, lon: Double) : CurrentWeather {
+    suspend fun fetchWeather(lat: Double, lon: Double, hourOffset:Int = 0) : Weather {
+        //Returns a Weather object based in the current time
+        // lat and lon: latitude and longitude
+        // hourOffset: Weather this many hours into the future.
+        if (hourOffset > 54) {
+            Log.w("LocationforecastDataSource",
+                "fetchWeather() might return null Weather parameters (hourOffset > 54)")
+        }
+
         try {
             val forecast = fetch(lat, lon)
-            val firstTimeseries = forecast?.properties?.timeseries?.get(0)
-            return CurrentWeather(
-                time = firstTimeseries?.time,
-                airTemperature = firstTimeseries?.data?.instant?.details?.air_temperature,
-                symbolCode = firstTimeseries?.data?.next_1_hours?.summary?.symbol_code,
-                windSpeed = firstTimeseries?.data?.instant?.details?.wind_speed,
-                windFromDirection = firstTimeseries?.data?.instant?.details?.wind_from_direction,
-                uvIndex = firstTimeseries?.data?.instant?.details?.ultraviolet_index_clear_sky,
-                precipitationNextHour = firstTimeseries?.data?.next_1_hours?.details?.precipitation_amount
+            val timeseries = forecast?.properties?.timeseries?.get(hourOffset)
+            return Weather(
+                time = timeseries?.time,
+                airTemperature = timeseries?.data?.instant?.details?.air_temperature,
+                symbolCode = timeseries?.data?.next_1_hours?.summary?.symbol_code,
+                windSpeed = timeseries?.data?.instant?.details?.wind_speed,
+                windFromDirection = timeseries?.data?.instant?.details?.wind_from_direction,
+                uvIndex = timeseries?.data?.instant?.details?.ultraviolet_index_clear_sky,
+                precipitationNextHour = timeseries?.data?.next_1_hours?.details?.precipitation_amount
             )
         }
         catch (e: Exception) {
-            Log.d("LocationforecastDataSource", e.message.toString())
-            Log.d("LocationforecastDataSource", e.stackTrace.toString())
-            return CurrentWeather(
+            Log.e("LocationforecastDataSource", e.message.toString())
+            Log.e("LocationforecastDataSource", e.stackTrace.toString())
+            return Weather(
                 time = null,
                 airTemperature = null,
                 symbolCode = null,

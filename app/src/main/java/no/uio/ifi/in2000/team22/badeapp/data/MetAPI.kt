@@ -7,7 +7,7 @@ object MetAPI {
 
     object LocationForecast{
         const val PATH: String = "in2000/weatherapi/locationforecast/2.0/"
-        const val TYPE: String = "compact"
+        const val TYPE: String = "complete"
     }
 
     object MetAlerts{

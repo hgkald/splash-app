@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.components.weather
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,7 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import no.uio.ifi.in2000.team22.badeapp.model.alerts.Alert
-import no.uio.ifi.in2000.team22.badeapp.model.forecast.CurrentWeather
+import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.WeatherUiState
 
 @Composable
@@ -37,8 +38,11 @@ fun WeatherDialog(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.elevatedCardColors(),
         ) {
-            val weather = weatherUiState.value.currentWeather
+            val weather = weatherUiState.value.weather
             val metAlerts = weatherUiState.value.metAlerts
+            Log.i("WeatherDialog: WEATHER", weather.toString())
+            Log.i("WeatherDialog: METALERTS", metAlerts.toString())
+
             Column (
                 modifier = Modifier.padding(12.dp),
                 verticalArrangement = Arrangement.Center,
@@ -59,7 +63,7 @@ fun WeatherDialog(
 fun WeatherDialogTitle() {
     Text(
         modifier = Modifier.padding(6.dp),
-        text = "Weather in this area",
+        text = "Vær i området",
         textAlign = TextAlign.Start,
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight(600)
@@ -67,17 +71,16 @@ fun WeatherDialogTitle() {
 }
 
 @Composable
-fun TemperatureAndIcon(weather: CurrentWeather) {
+fun TemperatureAndIcon(weather: Weather) {
     Row (
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ){
 
         Text(
-            text = weather.airTemperature.toString() + "\u00b0C",
+            text = weather.airTemperature.toString().replace(".",",") + "\u00b0C",
             modifier = Modifier
                 .wrapContentSize(Alignment.Center),
             textAlign = TextAlign.Center,
@@ -94,16 +97,17 @@ fun TemperatureAndIcon(weather: CurrentWeather) {
 }
 
 @Composable
-fun PrecipitationText(weather: CurrentWeather) {
+fun PrecipitationText(weather: Weather) {
     if (weather.precipitationNextHour != null) {
-        var precipText = "No precipitation expected"
+        var precipText = "Ingen nedbør forventet"
         if (weather.precipitationNextHour > 0) {
-            precipText = "${weather.precipitationNextHour} mm expected in the next hour"
+            precipText = "${weather.precipitationNextHour} mm forventet neste time"
+                .replace(".", ",")
         }
         Text(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(4.dp, 0.dp)
+                .padding(bottom = 4.dp)
                 .wrapContentSize(Alignment.Center),
             text = precipText,
             style = MaterialTheme.typography.bodyMedium,
@@ -115,30 +119,31 @@ fun PrecipitationText(weather: CurrentWeather) {
 
 @Composable
 fun MetAlertInfo(alerts: List<Alert>) {
-    Card (
+    Card(
         modifier = Modifier
             .padding(12.dp)
-            .fillMaxWidth()
-        ,
+            .fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-    ){
-        Row (
+    ) {
+        Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
-        ){
-            AlertIcon(alert = alerts[0], modifier = Modifier.padding(12.dp))
-
-            Column {
-                Text (
-                    text = alerts[0].eventAwarenessName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight(600)
-                )
-                Text (
-                    text = "Level ${alerts[0].riskMatrixColor}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+        ) {
+            if (alerts.isNotEmpty()) {
+                AlertIcon(alert = alerts[0], modifier = Modifier.padding(12.dp))
+                Column {
+                    Text(
+                        text = alerts[0].eventAwarenessName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight(600)
+                    )
+                    Text(
+                        text = "${alerts[0].riskMatrixColor.norsk} nivå",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         }
     }
 }
+

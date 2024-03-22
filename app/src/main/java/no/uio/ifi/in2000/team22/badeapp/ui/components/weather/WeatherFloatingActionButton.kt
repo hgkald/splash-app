@@ -6,10 +6,10 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import no.uio.ifi.in2000.team22.badeapp.model.forecast.CurrentWeather
+import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
 
 @Composable
-fun WeatherFloatingActionButton(weather: CurrentWeather, onClick: () -> Unit) {
+fun WeatherFloatingActionButton(weather: Weather, onClick: () -> Unit) {
     FloatingActionButton(
         onClick = { onClick() },
     ){

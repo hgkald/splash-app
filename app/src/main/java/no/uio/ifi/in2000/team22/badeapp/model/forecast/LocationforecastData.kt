@@ -1,7 +1,7 @@
 package no.uio.ifi.in2000.team22.badeapp.model.forecast
 
 /*
-This data class is for the compact version of the Locationforecast API, for example:
+This data class is for the Locationforecast API, for example:
   https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=60.10&lon=9.58
 or via the UiO proxy:
   https://gw-uio.intark.uh-it.no/in2000/weatherapi/locationforecast/2.0/compact?lat=60.10&lon=9.58

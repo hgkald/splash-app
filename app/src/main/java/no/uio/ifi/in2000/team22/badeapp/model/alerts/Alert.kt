@@ -1,9 +1,9 @@
 package no.uio.ifi.in2000.team22.badeapp.model.alerts
 
-enum class RiskMatrixColor {
-    Yellow,
-    Orange,
-    Red
+enum class RiskMatrixColor(val norsk: String) {
+    Yellow("Gult"),
+    Orange ("Oransje"),
+    Red("Rødt")
 }
 
 data class Alert(
