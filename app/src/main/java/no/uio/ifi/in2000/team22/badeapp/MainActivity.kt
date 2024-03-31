@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             HomeScreen(navcontroller)
                         }
-                        composable("favorites") { FavoritesScreen(navcontroller) }
+                        composable("favorites") { FavoritesScreen(navcontroller, emptyList())}
                         composable("search") { SearchScreen(navcontroller) }
                         //settings?
                     }
