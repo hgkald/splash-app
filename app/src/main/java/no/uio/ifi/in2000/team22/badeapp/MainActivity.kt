@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.search.SearchScreen
+import no.uio.ifi.in2000.team22.badeapp.ui.screens.swimspot.SwimspotScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.theme.BadeappTheme
 
 class MainActivity : ComponentActivity() {
@@ -36,6 +37,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("favorites") { FavoritesScreen(navcontroller) }
                         composable("search") { SearchScreen(navcontroller) }
+                        composable("swimspot") { SwimspotScreen(navcontroller) }
                         //settings?
                     }
                     //StoppScreen()

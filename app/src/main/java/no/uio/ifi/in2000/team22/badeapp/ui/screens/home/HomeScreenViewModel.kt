@@ -20,10 +20,10 @@ import no.uio.ifi.in2000.team22.badeapp.data.metalert.MetAlertDataSource
 import no.uio.ifi.in2000.team22.badeapp.data.metalert.MetAlertRepository
 import no.uio.ifi.in2000.team22.badeapp.model.alerts.Alert
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
-import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimSpot
+import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 
 data class SwimSpotUiState(
-    val swimSpotList: List<SwimSpot> = emptyList<SwimSpot>()// Swim Spot
+    val swimSpotList: List<Swimspot> = emptyList<Swimspot>()// Swim Spot
 )
 
 data class WeatherUiState(
@@ -58,7 +58,7 @@ class HomeScreenViewModel : ViewModel() {
     val mapUiState: StateFlow<MapUiState> = _mapUiState.asStateFlow()
 
     val frostRepo = FrostRepository()
-    suspend fun getSwimSpots(lat: Double, lon: Double): List<SwimSpot> {
+    suspend fun getSwimSpots(lat: Double, lon: Double): List<Swimspot> {
         return frostRepo.getBadeplasser(10.0, 5, lon, lat)
     }
 
@@ -72,7 +72,7 @@ class HomeScreenViewModel : ViewModel() {
         return metAlertRepo.getAlertsForPosition(lat, lon)
     }
 
-    suspend fun getAllSwimSpots(): List<SwimSpot> {
+    suspend fun getAllSwimSpots(): List<Swimspot> {
         return frostRepo.getAllSwimspots()
     }
 
@@ -126,7 +126,8 @@ class HomeScreenViewModel : ViewModel() {
             _weatherUiState.update {
                 it.copy(
                     weather = getCurrentWeather(lat, lon),
-                    metAlerts = getMetAlerts(lat, lon))
+                    metAlerts = getMetAlerts(lat, lon)
+                )
             }
         }
 

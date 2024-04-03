@@ -104,6 +104,10 @@ fun HomeScreen(
                         )
                     )
                 ),
+                onClick = {
+                    navcontroller.navigate("swimspot")
+                    true
+                }
             )
         }
 
