@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimSpot
+import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 
 data class FavListUiState(
-    val favList: List<SwimSpot> = emptyList()
+    val favList: List<Swimspot> = emptyList()
 )
 
 class FavoritesScreenViewModel : ViewModel() {

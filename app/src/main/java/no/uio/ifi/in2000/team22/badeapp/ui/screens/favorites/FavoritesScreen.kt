@@ -54,22 +54,20 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimSpot
+import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppTopAppBar
-import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.SwimSpotUiState
-import no.uio.ifi.in2000.team22.badeapp.ui.screens.swimspot.SwimSpotViewModel
+import no.uio.ifi.in2000.team22.badeapp.ui.screens.swimspot.SwimspotUiState
+import no.uio.ifi.in2000.team22.badeapp.ui.screens.swimspot.SwimspotViewModel
 
 
 @Composable
 fun FavoritesScreen(
     navcontroller : NavController,
-    swimspotViewModel: SwimSpotViewModel = viewModel(),
-    // swimSpots : List<SwimSpot>
+    swimspotViewModel: SwimspotViewModel = viewModel(),
+    // swimSpots : List<Swimspot>
 ){
-    val state: State<SwimSpotUiState> = swimspotViewModel.swimSpotUiState.collectAsState()
-    val list : List<SwimSpot> = listOf(SwimSpot(0, "Åkrasand", 59.250681, 5.194152), SwimSpot(1, "Stavasand", 59.232681, 5.184657), SwimSpot(2, "Fotvatnet", 59.298138, 5.286767), SwimSpot(3, "Sandvesand",59.171176, 5.195650 ))
-    val swimspotList = state.value.swimSpotList
+    val list : List<Swimspot> = listOf(Swimspot(0, "Åkrasand", 59.250681, 5.194152), Swimspot(1, "Stavasand", 59.232681, 5.184657), Swimspot(2, "Fotvatnet", 59.298138, 5.286767), Swimspot(3, "Sandvesand",59.171176, 5.195650 ))
 
     Scaffold (
         topBar = { BadeAppTopAppBar() },
@@ -86,10 +84,6 @@ fun FavoritesScreen(
                 FavCard(it)
 
             }
-            Text(text = "Faktiske badesteder:")
-            swimspotList.forEach {
-                FavCard(swimSpot = it)
-            }
         }
     }
 }
@@ -98,7 +92,7 @@ fun FavoritesScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavCard(swimSpot: SwimSpot){
+fun FavCard(swimSpot: Swimspot){
 
     Spacer(modifier = Modifier.padding(5.dp))
 
@@ -121,7 +115,7 @@ fun FavCard(swimSpot: SwimSpot){
 }
 
 @Composable
-fun FavCardInfo(swimSpot: SwimSpot, padding: Int){
+fun FavCardInfo(swimSpot: Swimspot, padding: Int){
     Column (
         modifier = Modifier
             .fillMaxWidth(0.7f)
@@ -176,7 +170,7 @@ fun FavToggleButton(padding: Int) {
 }
 
 @Composable
-fun FavTitle(swimSpot : SwimSpot, padding : Int){
+fun FavTitle(swimSpot : Swimspot, padding : Int){
     Text(
         text = swimSpot.name,
         modifier = Modifier
@@ -211,7 +205,7 @@ fun FavWeather(padding: Int){
 @Composable
 fun FavoriteScreenPreview(){
     val navController : NavController = rememberNavController()
-    val vm : SwimSpotViewModel = viewModel()
-    val list : List<SwimSpot> = listOf(SwimSpot(0, "Åkrasand", 59.250681, 5.194152), SwimSpot(1, "Stavasand", 59.232681, 5.184657), SwimSpot(2, "Fotvatnet", 59.298138, 5.286767), SwimSpot(3, "Sandvesand",59.171176, 5.195650 ))
+    val vm : SwimspotViewModel = viewModel()
+    val list : List<Swimspot> = listOf(Swimspot(0, "Åkrasand", 59.250681, 5.194152), Swimspot(1, "Stavasand", 59.232681, 5.184657), Swimspot(2, "Fotvatnet", 59.298138, 5.286767), Swimspot(3, "Sandvesand",59.171176, 5.195650 ))
     FavoritesScreen(navController, vm)
 }
