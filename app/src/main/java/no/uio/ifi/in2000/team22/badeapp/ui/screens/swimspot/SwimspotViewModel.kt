@@ -31,8 +31,8 @@ class SwimspotViewModel() : ViewModel() {
         )
     val swimSpotUiState: StateFlow<SwimspotUiState> = _swimspotUiState.asStateFlow()
 
-    val alertRepo = MetAlertRepository()
-    val weatherRepo = LocationforecastRepository(LocationforecastDataSource())
+    private val alertRepo = MetAlertRepository()
+    private val weatherRepo = LocationforecastRepository(LocationforecastDataSource())
 
     init {
         viewModelScope.launch {
@@ -40,9 +40,10 @@ class SwimspotViewModel() : ViewModel() {
                 Log.d("SwimspotViewModel", "Updating swimspot ui state")
                 it.copy(
                     swimspot = Swimspot(name = "Sørenga", lat = 10.75033, lon = 59.90075),
-//                    alerts = alertRepo.getAlertsForPosition(lat = 10.75033, lon = 59.90075),
-//                    weather = weatherRepo.fetchCurrentWeather(lon = 10.75033, lat = 59.90075)
+                    alerts = alertRepo.getAlertsForPosition(lon = 10.75033, lat = 59.90075),
+                    weather = weatherRepo.fetchCurrentWeather(lon = 10.75033, lat = 59.90075)
                 )
+
             }
         }
     }
