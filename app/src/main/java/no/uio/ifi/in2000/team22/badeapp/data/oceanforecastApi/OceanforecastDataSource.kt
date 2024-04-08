@@ -125,12 +125,12 @@ class OceanforecastDataSource {
 
         try {
             val forecast = fetch(lat, lon)
-            if (forecast?.properties?.timeseries?.get(0) == null) {
+            if (forecast?.properties?.timeseries?.get(2) == null) {
                 return null
             }
             return OceanForecast(
-                time = forecast.properties.timeseries.get(0).time,
-                waterTemperature = forecast.properties.timeseries.get(0).data.instant.details.sea_water_temperature,
+                time = forecast.properties.timeseries.get(2).time,
+                waterTemperature = forecast.properties.timeseries.get(2).data.instant.details.sea_water_temperature,
             )
         } catch (e: Exception) {
             Log.e("OceanforecastDataSource", e.message.toString())
