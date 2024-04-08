@@ -10,6 +10,8 @@ import io.ktor.client.request.header
 import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import io.ktor.serialization.gson.gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import no.uio.ifi.in2000.team22.badeapp.data.MetAPI
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.OceanForecast
 
@@ -83,21 +85,22 @@ class OceanforecastDataSource {
         }
 
     private suspend fun fetch(lat: Double, lon: Double): OceanForecastAPI? {
-        return try {
-            val response = client.get {
-                url {
-                    parameters.append("lat", lat.toString())
-                    parameters.append("lon", lon.toString())
+        return withContext(Dispatchers.IO) {
+            return@withContext try {
+                val response = client.get {
+                    url {
+                        parameters.append("lat", lat.toString())
+                        parameters.append("lon", lon.toString())
+                    }
                 }
+                response.body<OceanForecastAPI>()
+            } catch (e: Exception) {
+                Log.e("OceanForecastDataSource", e.message.toString())
+                Log.e("OceanForecastDataSource", e.stackTrace.toString())
+                null
             }
-            response.body<OceanForecastAPI>()
-        } catch (e: Exception) {
-            Log.e("OceanForecastDataSource", e.message.toString())
-            Log.e("OceanForecastDataSource", e.stackTrace.toString())
-            null
         }
     }
-
 
     suspend fun fetchTemperature(lat: Double, lon: Double): OceanForecast? {
 
