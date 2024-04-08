@@ -112,8 +112,8 @@ class OceanforecastDataSource {
                 waterTemperature = forecast.properties.timeseries.get(0).data.instant.details.sea_water_temperature,
             )
         } catch (e: Exception) {
-            Log.e("LocationforecastDataSource", e.message.toString())
-            Log.e("LocationforecastDataSource", e.stackTrace.toString())
+            Log.e("OceanforecastDataSource", e.message.toString())
+            Log.e("OceanforecastDataSource", e.stackTrace.toString())
             return null
 
         }
