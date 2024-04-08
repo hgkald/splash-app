@@ -11,10 +11,10 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import io.ktor.serialization.gson.gson
 import no.uio.ifi.in2000.team22.badeapp.data.MetAPI
-import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
+import no.uio.ifi.in2000.team22.badeapp.model.forecast.OceanForecast
 
 
-data class OceanForecast(
+data class OceanForecastAPI(
     val type: String,
     val geometry: Geometry,
     val properties: Properties
@@ -82,7 +82,7 @@ class OceanforecastDataSource {
             }
         }
 
-    private suspend fun fetch(lat: Double, lon: Double): OceanForecast? {
+    private suspend fun fetch(lat: Double, lon: Double): OceanForecastAPI? {
         return try {
             val response = client.get {
                 url {
@@ -90,7 +90,7 @@ class OceanforecastDataSource {
                     parameters.append("lon", lon.toString())
                 }
             }
-            response.body<OceanForecast>()
+            response.body<OceanForecastAPI>()
         } catch (e: Exception) {
             Log.e("OceanForecastDataSource", e.message.toString())
             Log.e("OceanForecastDataSource", e.stackTrace.toString())
@@ -99,41 +99,23 @@ class OceanforecastDataSource {
     }
 
 
-    suspend fun fetchTemperature(lat: Double, lon: Double): Weather {
-        //Returns a Weather object based in the current time
-        // lat and lon: latitude and longitude
-        // hourOffset: Weather this many hours into the future.
-        if (hourOffset > 54) {
-            Log.w(
-                "LocationforecastDataSource",
-                "fetchWeather() might return null Weather parameters (hourOffset > 54)"
-            )
-        }
+    suspend fun fetchTemperature(lat: Double, lon: Double): OceanForecast? {
+
 
         try {
             val forecast = fetch(lat, lon)
-            val timeseries = forecast?.properties?.timeseries?.get(hourOffset)
-            return Weather(
-                time = timeseries?.time,
-                airTemperature = timeseries?.data?.instant?.details?.air_temperature,
-                symbolCode = timeseries?.data?.next_1_hours?.summary?.symbol_code,
-                windSpeed = timeseries?.data?.instant?.details?.wind_speed,
-                windFromDirection = timeseries?.data?.instant?.details?.wind_from_direction,
-                uvIndex = timeseries?.data?.instant?.details?.ultraviolet_index_clear_sky,
-                precipitationNextHour = timeseries?.data?.next_1_hours?.details?.precipitation_amount
+            if (forecast?.properties?.timeseries?.get(0) == null) {
+                return null
+            }
+            return OceanForecast(
+                time = forecast.properties.timeseries.get(0).time,
+                waterTemperature = forecast.properties.timeseries.get(0).data.instant.details.sea_water_temperature,
             )
         } catch (e: Exception) {
             Log.e("LocationforecastDataSource", e.message.toString())
             Log.e("LocationforecastDataSource", e.stackTrace.toString())
-            return Weather(
-                time = null,
-                airTemperature = null,
-                symbolCode = null,
-                windSpeed = null,
-                windFromDirection = null,
-                uvIndex = null,
-                precipitationNextHour = null
-            )
+            return null
+
         }
     }
 
