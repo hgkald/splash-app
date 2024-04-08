@@ -15,7 +15,9 @@ import kotlinx.coroutines.withContext
 import no.uio.ifi.in2000.team22.badeapp.data.MetAPI
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.OceanForecast
 
-
+/**
+ * Data classes for OceanForecast API
+ */
 data class OceanForecastAPI(
     val type: String,
     val geometry: Geometry,
@@ -66,7 +68,9 @@ data class Details(
     val sea_water_to_direction: Double
 )
 
-
+/**
+ * Class for connecting and authentication for API
+ */
 class OceanforecastDataSource {
     private val client =
         HttpClient {
@@ -84,6 +88,11 @@ class OceanforecastDataSource {
             }
         }
 
+    /**
+     * Function to get API data.
+     * @return [OceanForecastAPI]
+     * @property [lat] latitude, [lon] - longitude
+     */
     private suspend fun fetch(lat: Double, lon: Double): OceanForecastAPI? {
         return withContext(Dispatchers.IO) {
             return@withContext try {
@@ -102,6 +111,11 @@ class OceanforecastDataSource {
         }
     }
 
+    /**
+     * Function to create an [OceanForecast] object from API data
+     * @return [OceanForecast] object
+     * @property [lat] latitude, [lon] - longitude
+     */
     suspend fun fetchTemperature(lat: Double, lon: Double): OceanForecast? {
 
 
