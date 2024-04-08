@@ -7,7 +7,7 @@ import com.mapbox.geojson.Geometry
 import com.mapbox.geojson.Point
 
 class SwimSpotPoint(
-    val swimSpot: SwimSpot,
+    val swimSpot: Swimspot,
     private val point: Point
 ) : GeoJson, Geometry, CoordinateContainer<List<Double>> {
 

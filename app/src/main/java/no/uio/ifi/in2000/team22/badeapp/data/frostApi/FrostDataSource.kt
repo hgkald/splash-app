@@ -10,7 +10,7 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import io.ktor.serialization.gson.gson
 import no.uio.ifi.in2000.team22.badeapp.data.FrostAPI
-import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimSpot
+import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 
 private data class Data(
     val tseries: List<Tseries>
@@ -69,19 +69,19 @@ class FrostDataSource {
      *
      * @return a list of the class SwimSpot
      */
-    suspend fun getAllSwimSpots(): List<SwimSpot> {
+    suspend fun getAllSwimSpots(): List<Swimspot> {
         val response: FrostData = try {
             client.get("").body<FrostData>()
         } catch (e: Exception) {
             Log.e("FrostDataSource", "failed to get data from Frost: ${e.message}")
-            return emptyList<SwimSpot>()
+            return emptyList<Swimspot>()
         }
 
-        val swimspots: List<SwimSpot> = try {
+        val swimspots: List<Swimspot> = try {
             response.data.tseries
                 .filter { it -> it.header.extra.pos.lat != "None" || it.header.extra.pos.lat != "None" }
                 .map { it ->
-                    SwimSpot(
+                    Swimspot(
                         name = it.header.extra.name,
                         lat = it.header.extra.pos.lat.toDouble(),
                         lon = it.header.extra.pos.lon.toDouble()
@@ -89,7 +89,7 @@ class FrostDataSource {
                 }
         } catch (e: Exception) {
             Log.e("FrostDataSource", "failed to parse data to SwimSpots: ${e.message}")
-            emptyList<SwimSpot>()
+            emptyList<Swimspot>()
         }
 
         return swimspots
@@ -120,16 +120,16 @@ class FrostDataSource {
         maxCount: Int,
         lon: Double,
         lat: Double
-    ): List<SwimSpot> {
+    ): List<Swimspot> {
         val data = FrostDataSource()
         val verdi = data.getData(maxDist, maxCount, lon, lat)
-        val badesteder = mutableListOf<SwimSpot>()
+        val badesteder = mutableListOf<Swimspot>()
 
         for (badestedene in verdi.data.tseries) {
             val name = badestedene.header.extra.name
             val lon = badestedene.header.extra.pos.lon.toDouble()
             val lat = badestedene.header.extra.pos.lat.toDouble()
-            val badested = SwimSpot(name = name, lon = lon, lat = lat)
+            val badested = Swimspot(name = name, lon = lon, lat = lat)
             badesteder.add(badested)
 
         }
