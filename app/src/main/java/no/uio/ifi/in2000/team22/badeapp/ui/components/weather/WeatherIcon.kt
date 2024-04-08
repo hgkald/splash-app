@@ -5,11 +5,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import no.uio.ifi.in2000.team22.badeapp.R
-import no.uio.ifi.in2000.team22.badeapp.model.forecast.CurrentWeather
+import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
 
 
 @Composable
-fun WeatherIcon(weather: CurrentWeather, modifier: Modifier) {
+fun WeatherIcon(weather: Weather, modifier: Modifier) {
     if (weather.symbolCode != null) {
         val drawableId : Int? = weatherIconDrawable[weather.symbolCode.toString()]
         if (drawableId != null) {

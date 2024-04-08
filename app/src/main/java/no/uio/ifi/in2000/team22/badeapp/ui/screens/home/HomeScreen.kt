@@ -58,7 +58,7 @@ fun HomeScreen(
         bottomBar = { BadeAppBottomAppBar(navcontroller) },
         floatingActionButton = {
             WeatherFloatingActionButton(
-                weather = weatherUiState.value.currentWeather,
+                weather = weatherUiState.value.weather,
                 onClick = {
                     showWeatherDialog = true
                 },
