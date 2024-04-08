@@ -15,6 +15,9 @@ import kotlinx.coroutines.withContext
 import no.uio.ifi.in2000.team22.badeapp.data.MetAPI
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.OceanForecast
 
+/**
+ * Data classes for OceanForecast API
+ */
 
 data class OceanForecastAPI(
     val type: String,
@@ -66,6 +69,9 @@ data class Details(
     val sea_water_to_direction: Double
 )
 
+/**
+ * Class for connecting and authentication for API
+ */
 
 class OceanforecastDataSource {
     private val client =
@@ -83,6 +89,12 @@ class OceanforecastDataSource {
                 gson()
             }
         }
+
+    /**
+     * Function to get API data.
+     * @return [OceanForecastAPI]
+     * @property [lat] latitude, [lon] - longitude
+     */
 
     private suspend fun fetch(lat: Double, lon: Double): OceanForecastAPI? {
         return withContext(Dispatchers.IO) {
@@ -102,17 +114,23 @@ class OceanforecastDataSource {
         }
     }
 
+    /**
+     * Function to create an [OceanForecast] object from API data
+     * @return [OceanForecast] object
+     * @property [lat] latitude, [lon] - longitude
+     */
+
     suspend fun fetchTemperature(lat: Double, lon: Double): OceanForecast? {
 
 
         try {
             val forecast = fetch(lat, lon)
-            if (forecast?.properties?.timeseries?.get(0) == null) {
+            if (forecast?.properties?.timeseries?.get(2) == null) {
                 return null
             }
             return OceanForecast(
-                time = forecast.properties.timeseries.get(0).time,
-                waterTemperature = forecast.properties.timeseries.get(0).data.instant.details.sea_water_temperature,
+                time = forecast.properties.timeseries.get(2).time,
+                waterTemperature = forecast.properties.timeseries.get(2).data.instant.details.sea_water_temperature,
             )
         } catch (e: Exception) {
             Log.e("OceanforecastDataSource", e.message.toString())

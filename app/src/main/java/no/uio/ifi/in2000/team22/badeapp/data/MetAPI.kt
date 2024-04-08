@@ -15,6 +15,10 @@ object MetAPI {
         const val CURRENT_ENDPOINT = "current.json"
         const val TEST_ENDPOINT = "test.json"
     }
+    
+    /**
+     * Object for OceanForecast API path
+     */
 
     object OceanForecast {
         const val PATH: String = "in2000/weatherapi/oceanforecast/2.0/"
