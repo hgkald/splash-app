@@ -47,28 +47,16 @@ fun WeatherOverview(
     uvIndex: Double?,
     @DrawableRes weatherIcon: Int?,
 ) {
-    val ready =
-        (waterTemp != null) && (airTemp != null) && (uvIndex != null) && (weatherIcon != null)
-
     Column(
         modifier = Modifier
             .width(400.dp)
     ) {
-        if (ready) {
-            Content(
-                waterTemp, airTemp, uvIndex, weatherIcon
-            )
-        } else {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            ) {
-                LoadingIndicator(
-                    onErrorText = "Kunne ikke hente værinformasjon for badestedet"
-                )
-            }
-        }
+        Content(
+            waterTemp = waterTemp,
+            airTemp = airTemp,
+            uvIndex = uvIndex,
+            weatherIcon = weatherIcon
+        )
     }
 }
 
@@ -98,70 +86,87 @@ private fun Content(
         modifier = Modifier.padding(bottom = 9.dp)
     )
     WideInfoCard {
-        Text(
-            text = "${waterTemp?.roundToInt()}° i vannet",
-            style = MaterialTheme.typography.displayMedium
-        )
+        if (waterTemp == null) {
+            LoadingIndicator(onErrorText = "Kunne ikke hente temperaturen i vannet")
+        } else {
+            Text(
+                text = "${waterTemp.roundToInt()}° i vannet",
+                style = MaterialTheme.typography.displayMedium
+            )
+        }
     }
-    Row(
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 12.dp)
-    ) {
 
-        //Shows the current weather as a drawable
-        if (weatherIcon != null) {
+    if ((airTemp == null) || (uvIndex == null) || (weatherIcon == null)) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp)
+                .padding(top = 12.dp)
+        ) {
+            LoadingIndicator(
+                onErrorText = "Kunne ikke hente værinformasjon for badestedet"
+            )
+        }
+    } else {
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp)
+        ) {
+
+            //Shows the current weather as a drawable
+            if (weatherIcon != null) {
+                SmallInfoCard(
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = weatherIcon),
+                        contentDescription = weatherIcon.toString(),
+                    )
+                    Text(
+                        text = "Værforhold",
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+            }
+
+            //Shows current air temperature
             SmallInfoCard(
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.SpaceEvenly
             ) {
-                Image(
-                    painter = painterResource(id = weatherIcon),
-                    contentDescription = weatherIcon.toString(),
+                Text(
+                    text = "${airTemp?.roundToInt()}°",
+                    style = MaterialTheme.typography.displayMedium,
                 )
                 Text(
-                    text = "Værforhold",
+                    text = "Lufttemperatur",
                     style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier
                 )
             }
-        }
 
-        //Shows current air temperature
-        SmallInfoCard(
-            verticalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Text(
-                text = "${airTemp?.roundToInt()}°",
-                style = MaterialTheme.typography.displayMedium,
-            )
-            Text(
-                text = "Lufttemperatur",
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier
-            )
-        }
-
-        //Shows UV-index and a color based on said value
-        SmallInfoCard(
+            //Shows UV-index and a color based on said value
+            SmallInfoCard(
 //            modifier = Modifier.border(
 //                width = 3.dp,
 //                color = uvToColor(uvValue),
 //                shape = RoundedCornerShape(10)
 //            ),
-            verticalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Text(
-                text = "${uvIndex?.roundToInt()}",
-                style = MaterialTheme.typography.displayMedium,
-            )
-            Text(
-                text = "${uvToNorwegian(uvValue)} UV-nivå",
-                style = MaterialTheme.typography.labelSmall,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-            )
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Text(
+                    text = "${uvIndex?.roundToInt()}",
+                    style = MaterialTheme.typography.displayMedium,
+                )
+                Text(
+                    text = "${uvToNorwegian(uvValue)} UV-nivå",
+                    style = MaterialTheme.typography.labelSmall,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                )
+            }
         }
-
     }
     Divider(
         modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)

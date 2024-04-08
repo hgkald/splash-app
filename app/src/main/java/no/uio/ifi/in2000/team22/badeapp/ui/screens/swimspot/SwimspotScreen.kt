@@ -68,7 +68,7 @@ fun SwimspotOverview(state: State<SwimspotUiState>) {
             modifier = Modifier.fillMaxWidth()
         ) {
             WeatherOverview(
-                waterTemp = state.value.weather?.airTemperature,
+                waterTemp = state.value.ocean?.waterTemperature,
                 airTemp = state.value.weather?.airTemperature,
                 uvIndex = state.value.weather?.uvIndex,
                 weatherIcon = weatherIconDrawable[state.value.weather?.symbolCode]
