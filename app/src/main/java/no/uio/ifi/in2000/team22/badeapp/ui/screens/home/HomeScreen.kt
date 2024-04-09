@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapboxExperimental
@@ -27,6 +27,8 @@ import com.mapbox.maps.extension.style.expressions.dsl.generated.literal
 import com.mapbox.maps.plugin.annotation.AnnotationConfig
 import com.mapbox.maps.plugin.annotation.AnnotationSourceOptions
 import com.mapbox.maps.plugin.annotation.ClusterOptions
+import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
+import com.mapbox.maps.plugin.locationcomponent.generated.LocationComponentSettings
 import com.mapbox.maps.plugin.scalebar.generated.ScaleBarSettings
 import no.uio.ifi.in2000.team22.badeapp.R
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
@@ -39,13 +41,29 @@ import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.WeatherFloatingAct
 @Composable
 fun HomeScreen(
     navcontroller: NavController,
-    homeScreenViewModel: HomeScreenViewModel = viewModel()
+    homeScreenViewModel: HomeScreenViewModel, //= viewModel()
 ) {
     var showWeatherDialog by remember { mutableStateOf(false) }
 
     val swimSpotUiState = homeScreenViewModel.swimSpotUiState.collectAsState()
     val weatherUiState = homeScreenViewModel.weatherUiState.collectAsState()
     val mapUiState = homeScreenViewModel.mapUiState.collectAsState()
+
+    val locationPermissionState by homeScreenViewModel.locationPermissionGranted.collectAsState()
+
+    // When permissionState changes, recomposition happens
+    LaunchedEffect(locationPermissionState) {
+        when (locationPermissionState) {
+            true -> {
+            }
+            false -> {
+                // Do something when permission is denied
+            }
+            null -> {
+                // Do something when permission is not yet determined (initial state)
+            }
+        }
+    }
 
     val marker =
         BitmapFactory.decodeResource(
@@ -88,6 +106,11 @@ fun HomeScreen(
                     styleUri = Style.OUTDOORS
                 )
             },
+            locationComponentSettings = LocationComponentSettings(
+                createDefault2DPuck(),
+            ) {
+                enabled = locationPermissionState == true
+            }
         ) {
             PointAnnotationGroup(
                 annotations = mapUiState.value.mapPointsState.map { it.withIconImage(marker) },

@@ -3,6 +3,7 @@ package no.uio.ifi.in2000.team22.badeapp.ui.screens.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mapbox.common.location.Location
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapboxExperimental
 import com.mapbox.maps.extension.compose.animation.viewport.MapViewportState
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team22.badeapp.data.frostApi.FrostRepository
 import no.uio.ifi.in2000.team22.badeapp.data.frostApi.SwimSpotOverviewRepository
+import no.uio.ifi.in2000.team22.badeapp.data.location.UserLocationRepository
 import no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi.LocationforecastDataSource
 import no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi.LocationforecastRepository
 import no.uio.ifi.in2000.team22.badeapp.data.metalert.MetAlertDataSource
@@ -52,10 +54,21 @@ class HomeScreenViewModel : ViewModel() {
     private val _swimSpotUiState = MutableStateFlow(SwimSpotUiState())
     private val _weatherUiState = MutableStateFlow(WeatherUiState())
     private val _mapUiState = MutableStateFlow(MapUiState())
+    private val _locationPermissionGranted = MutableStateFlow<Boolean?>(null)
 
     val swimSpotUiState: StateFlow<SwimSpotUiState> = _swimSpotUiState.asStateFlow()
     val weatherUiState: StateFlow<WeatherUiState> = _weatherUiState.asStateFlow()
     val mapUiState: StateFlow<MapUiState> = _mapUiState.asStateFlow()
+    val locationPermissionGranted: StateFlow<Boolean?> = _locationPermissionGranted.asStateFlow()
+
+    fun updatePermissionState(isGranted: Boolean) {
+        _locationPermissionGranted.value = isGranted
+    }
+
+    val locationRepo = UserLocationRepository()
+    suspend fun getLastKnownLocation() : Location? {
+        return locationRepo.getLastKnownLocation()
+    }
 
     val frostRepo = FrostRepository()
     suspend fun getSwimSpots(lat: Double, lon: Double): List<Swimspot> {
@@ -94,10 +107,18 @@ class HomeScreenViewModel : ViewModel() {
     }
 
     init {
-        val lat = 59.9464
-        val lon = 10.7215
-
         viewModelScope.launch {
+            val lat = _mapUiState.value.mapPositionState.latitude()
+            val lon = _mapUiState.value.mapPositionState.longitude()
+
+            val lastLocation  = getLastKnownLocation()
+            Log.i("HomeViewModel", "getLastKnownLocation(): lat: $lat, lon: $lon")
+            /*if (lastLocation != null) {
+                lat = lastLocation.latitude
+                lon = lastLocation.longitude
+                Log.i("HomeViewModel", "getLastKnownLocation(): lat: $lat, lon: $lon")
+            }*/
+
             _swimSpotUiState.update {
                 it.copy(swimSpotList = SwimSpotOverviewRepository.swimSpots)
             }
