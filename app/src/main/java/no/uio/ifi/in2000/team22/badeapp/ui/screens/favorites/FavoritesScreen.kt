@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,9 +23,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import no.uio.ifi.in2000.team22.badeapp.MainActivity
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppTopAppBar
@@ -33,59 +36,39 @@ import no.uio.ifi.in2000.team22.badeapp.ui.components.favorites.FavoriteButton
 @Composable
 fun FavoritesScreen(
     navController: NavController,
+    //favoriteList: MutableList<Swimspot>,
     favViewModel : FavoritesScreenViewModel = viewModel()
 ){
+
+
     val state : State<FavUiState> = favViewModel.favUiState.collectAsState()
 
-
     /*
-    // Få referanse til SharedPreferences
-    val sharedPreferences = this.getSharedPreferences("prefs", Context.MODE_PRIVATE)
-
-// Hent editoren til SharedPreferences
-    val editor = sharedPreferences.edit()
-
-// Konverter listen til en Set
-    val set = HashSet<Swimspot>()
-
-// Legg til listen i SharedPreferences
-    editor.putStringSet("key", set)
-
-// Bruk endringene i SharedPreferences i bakgrunnen
-    editor.apply()
+    Button(onClick = {
+        val list = mutableListOf(
+            Swimspot(0, "Åkrasand", 59.250681, 5.194152),
+            Swimspot(1, "Stavasand", 59.232681, 5.184657),
+            Swimspot(2, "Fotvatnet", 59.298138, 5.286767),
+            Swimspot(3, "Sandvesand",59.171176, 5.195650)
+        )
+        list.forEach{
+            favViewModel.favorite(it)
+        }
+    }){
+        Text(text = "Legg til favoritter")
+    }
 
      */
 
-
-
-
-
     Scaffold (
-        //topBar = { BadeAppTopAppBar() },
-        topBar = {
-            Button(onClick = {
-                val list = mutableListOf(
-                    Swimspot(0, "Åkrasand", 59.250681, 5.194152),
-                    Swimspot(1, "Stavasand", 59.232681, 5.184657),
-                    Swimspot(2, "Fotvatnet", 59.298138, 5.286767),
-                    Swimspot(3, "Sandvesand",59.171176, 5.195650)
-                )
-                list.forEach{
-                    favViewModel.favorite(it)
-                }
-            }){
-                Text(text = "Legg til favoritter")
-            }
-        },
+        topBar = { BadeAppTopAppBar() },
         bottomBar = { BadeAppBottomAppBar(navcontroller = navController) }
     ){ paddingValues ->
 
         LazyColumn (
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(top = 100.dp)
         ){
-
             items(state.value.favList){
                 FavCard(
                     swimspot = it,
@@ -186,7 +169,7 @@ fun FavCardInfo(swimspot: Swimspot){
 @Preview
 fun FavScreenPreview(){
     val navController : NavController = rememberNavController()
-    FavoritesScreen(navController = navController)
+    //FavoritesScreen(navController = navController, this@MainActivity)
 }
 
 

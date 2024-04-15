@@ -31,10 +31,13 @@ class FavoritesScreenViewModel : ViewModel(){
     }
 
     fun toggleFavorite(swimspot: Swimspot){
+        Log.d("toggleFavorite", "")
         if (swimspot in favoritesListRepository.getFavList()){
             favoritesListRepository.removeFavorite(swimspot = swimspot)
+            Log.d("toggleFavorite", "removed $swimspot")
         } else {
             favoritesListRepository.addFavorite(swimspot = swimspot)
+            Log.d("toggleFavorite", "Added $swimspot")
         }
     }
 
