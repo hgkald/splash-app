@@ -25,6 +25,7 @@ import no.uio.ifi.in2000.team22.badeapp.data.SwimspotDataSource
 import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesListRepository
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreen
+import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreenViewModel
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreenViewModel
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.search.SearchScreen
@@ -33,6 +34,7 @@ import no.uio.ifi.in2000.team22.badeapp.ui.theme.BadeappTheme
 
 class MainActivity : ComponentActivity() {
     private val homeScreenViewModel: HomeScreenViewModel by viewModels()
+    private val favoritesScreenViewModel: FavoritesScreenViewModel by viewModels()
 
     @RequiresApi(Build.VERSION_CODES.O)
     private val requestPermissionLauncher =
@@ -61,7 +63,7 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(navController, homeScreenViewModel)
                         }
 
-                        composable("favorites") { FavoritesScreen(navController) }
+                        composable("favorites") { FavoritesScreen(navController, favoritesScreenViewModel) }
                         composable("search") { SearchScreen(navController) }
                         composable("swimspot") { SwimspotScreen(navController) }
                         //settings?

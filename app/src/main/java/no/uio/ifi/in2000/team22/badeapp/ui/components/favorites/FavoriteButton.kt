@@ -25,13 +25,13 @@ import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreenView
 @Composable
 fun FavoriteButton(
     swimspot: Swimspot,
-    state: State<FavUiState>,
+    state: FavUiState,
     modifier: Modifier = Modifier,
     toggleFavorite : () -> Unit,
 ){
-    if (state.value.favList.isEmpty()){
+    if (state.favList.isEmpty()){
         FavoriteButtonOutlined(onClick = toggleFavorite, modifier = modifier)
-    } else if (swimspot in state.value.favList){
+    } else if (swimspot in state.favList){
         FavoriteButtonFilled(onClick = toggleFavorite, modifier = modifier)
     } else {
         FavoriteButtonOutlined(onClick = toggleFavorite, modifier = modifier)
@@ -97,15 +97,16 @@ private fun FavOutlined(){
     FavoriteButtonOutlined({})
 }
 
+/*
 @Composable
 @Preview
 private fun FavButtonPreview(){
     val favViewModel: FavoritesScreenViewModel = viewModel()
-    val state : State<FavUiState> = favViewModel.favUiState.collectAsState()
+    val state : FavUiState = favViewModel.favUiState.collectAsState()
 
     FavoriteButton(
         swimspot = Swimspot(1, "hei", 1.1, 1.1),
         state = state,
         modifier = Modifier
         ) {}
-}
+}*/
