@@ -1,5 +1,8 @@
 package no.uio.ifi.in2000.team22.badeapp
 
+import android.Manifest
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +20,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
+import no.uio.ifi.in2000.team22.badeapp.data.SwimspotDataSource
+import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesListRepository
+import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreenViewModel
