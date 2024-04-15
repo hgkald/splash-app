@@ -37,29 +37,11 @@ import no.uio.ifi.in2000.team22.badeapp.ui.components.favorites.FavoriteButton
 @Composable
 fun FavoritesScreen(
     navController: NavController,
-    //favoriteList: MutableList<Swimspot>,
+    //favoritesList: List<Swimspot>,
     favViewModel : FavoritesScreenViewModel = viewModel()
 ){
 
-
     val state by favViewModel.favUiState.collectAsState()
-
-    /*
-    Button(onClick = {
-        val list = mutableListOf(
-            Swimspot(0, "Åkrasand", 59.250681, 5.194152),
-            Swimspot(1, "Stavasand", 59.232681, 5.184657),
-            Swimspot(2, "Fotvatnet", 59.298138, 5.286767),
-            Swimspot(3, "Sandvesand",59.171176, 5.195650)
-        )
-        list.forEach{
-            favViewModel.favorite(it)
-        }
-    }){
-        Text(text = "Legg til favoritter")
-    }
-
-     */
 
     Scaffold (
         topBar = { BadeAppTopAppBar() },
@@ -73,7 +55,7 @@ fun FavoritesScreen(
             items(state.favList){
                 FavCard(
                     swimspot = it,
-                    state = state,
+                    favoritesList = state.favList,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
@@ -96,7 +78,7 @@ fun FavoritesScreen(
 @Composable
 fun FavCard(
     swimspot: Swimspot,
-    state: FavUiState,
+    favoritesList: List<Swimspot>,
     toggleFavorite : () -> Unit,
     goToSwimspotScreen : () -> Unit,
     modifier: Modifier = Modifier
@@ -122,7 +104,7 @@ fun FavCard(
             ){
                 FavoriteButton(
                     swimspot = swimspot,
-                    state = state,
+                    favoritesList = favoritesList,
                     toggleFavorite = toggleFavorite
                 )
             }
