@@ -52,6 +52,14 @@ android {
 
 dependencies {
 
+    val versions = object {
+        val KTOR = "2.3.9"
+        val MAPBOX = "11.2.0"
+        val NAVIGATION = "2.7.7"
+        val GOOGLE_PLAY_SERVICES = "21.2.0"
+        val ACCOMPANIST = "0.32.0" //do not change this unless Compose version is changed!!!!
+    }
+
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
@@ -69,26 +77,32 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-    implementation ("androidx.core:core-splashscreen:1.0.1")
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     // SLF4J:
-    implementation ("org.slf4j:slf4j-simple:2.0.12")
+    implementation("org.slf4j:slf4j-simple:2.0.12")
 
     // ktor:
-    var ktor_version = "2.3.9"
-    implementation("io.ktor:ktor-client-core:$ktor_version")
-    implementation("io.ktor:ktor-client-cio:$ktor_version")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
-    implementation("io.ktor:ktor-serialization-gson:$ktor_version")
+    implementation("io.ktor:ktor-client-core:${versions.KTOR}")
+    implementation("io.ktor:ktor-client-cio:${versions.KTOR}")
+    implementation("io.ktor:ktor-client-content-negotiation:${versions.KTOR}")
+    implementation("io.ktor:ktor-serialization-gson:${versions.KTOR}")
 
     //mapbox
-    implementation("com.mapbox.maps:android:11.2.0")
-    implementation("com.mapbox.extension:maps-compose:11.2.0")
+    implementation("com.mapbox.maps:android:${versions.MAPBOX}")
+    implementation("com.mapbox.extension:maps-compose:${versions.MAPBOX}")
 
     //Navigation
-    val nav_version = "2.7.7"
-    implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
-    implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
+    implementation("androidx.navigation:navigation-fragment-ktx:${versions.NAVIGATION}")
+    implementation("androidx.navigation:navigation-ui-ktx:${versions.NAVIGATION}")
 
+    //google play services
+    implementation("com.google.android.gms:play-services-location:${versions.GOOGLE_PLAY_SERVICES}")
 
+    //google accompanist
+    /* this dependency cannot use the latest version,
+       since this is the latest version that works with v1.5.0 of Jetpack Compose
+    */
+    //noinspection GradleDependency
+    implementation("com.google.accompanist:accompanist-permissions:${versions.ACCOMPANIST}")
 }

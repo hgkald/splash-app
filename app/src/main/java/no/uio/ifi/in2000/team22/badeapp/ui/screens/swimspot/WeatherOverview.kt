@@ -2,26 +2,36 @@ package no.uio.ifi.in2000.team22.badeapp.ui.screens.swimspot
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import no.uio.ifi.in2000.team22.badeapp.R
 import no.uio.ifi.in2000.team22.badeapp.model.uv.UV
 import no.uio.ifi.in2000.team22.badeapp.model.uv.doubleToUV
@@ -64,13 +74,17 @@ fun WeatherOverview(
 /**
  * Main content for [WeatherOverview]. Containts the main weather info.
  */
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     waterTemp: Double?,
     airTemp: Double?,
     uvIndex: Double?,
     @DrawableRes weatherIcon: Int?,
-) {
+
+    ) {
+    val showDialogStateUV = remember { mutableStateOf(false) }
     val uvValue = if (uvIndex != null) {
         doubleToUV(uvIndex)
     } else {
@@ -148,17 +162,15 @@ private fun Content(
 
             //Shows UV-index and a color based on said value
             SmallInfoCard(
-//            modifier = Modifier.border(
-//                width = 3.dp,
-//                color = uvToColor(uvValue),
-//                shape = RoundedCornerShape(10)
-//            ),
-                verticalArrangement = Arrangement.SpaceEvenly
+                verticalArrangement = Arrangement.SpaceEvenly,
+                clickable = true,
+                onClick = { showDialogStateUV.value = true },
             ) {
                 Text(
                     text = "${uvIndex?.roundToInt()}",
                     style = MaterialTheme.typography.displayMedium,
-                )
+
+                    )
                 Text(
                     text = "${uvToNorwegian(uvValue)} UV-nivå",
                     style = MaterialTheme.typography.labelSmall,
@@ -171,29 +183,62 @@ private fun Content(
     Divider(
         modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
     )
+    if (showDialogStateUV.value) {
+        Dialog(
+            onDismissRequest = { showDialogStateUV.value = false },
+            properties = DialogProperties(dismissOnClickOutside = true)
+        ) {
+            Surface(
+//                color = Color.White,
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(text = "UV-Indeks:", style = MaterialTheme.typography.titleLarge)
+                    Text(text = "Lav: 1-2", style = MaterialTheme.typography.bodyLarge)
+                    Text(text = "Moderat: 3-5", style = MaterialTheme.typography.bodyLarge)
+                    Text(text = "Sterk: 6-7", style = MaterialTheme.typography.bodyLarge)
+                    Text(text = "Svært sterk: 8-10", style = MaterialTheme.typography.bodyLarge)
+                    Text(text = "Ekstrem: 11+", style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        }
+    }
 }
 
 @Composable
 fun SmallInfoCard(
     modifier: Modifier = Modifier,
     verticalArrangement: Arrangement.Vertical,
+    clickable: Boolean = false,
+    onClick: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
+
     Card(
         modifier = modifier
             .size(110.dp)
+            .clickable(enabled = clickable, onClick = onClick)
     ) {
-        Column(
-            verticalArrangement = verticalArrangement,
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
+                .fillMaxSize()
         ) {
-            content()
+            Column(
+                verticalArrangement = verticalArrangement,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                content()
+            }
         }
     }
+
 }
+
 
 @Composable
 fun WideInfoCard(

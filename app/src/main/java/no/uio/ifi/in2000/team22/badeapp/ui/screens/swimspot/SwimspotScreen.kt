@@ -59,6 +59,7 @@ fun SwimspotOverview(state: State<SwimspotUiState>) {
             modifier = Modifier.padding(bottom = 14.dp)
         )
 
+        //TODO: Should problably include more information about each alert, and maybe a message to go check local weatherforecast to get more info
         AlertOverview(state.value.alerts)
         Spacer(modifier = Modifier.height(20.dp))
 
