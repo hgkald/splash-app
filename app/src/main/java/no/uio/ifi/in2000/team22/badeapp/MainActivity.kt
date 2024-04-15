@@ -24,6 +24,7 @@ import no.uio.ifi.in2000.team22.badeapp.data.SwimspotDataSource
 import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesListRepository
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreen
+import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreenViewModel
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreenViewModel
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.search.SearchScreen
