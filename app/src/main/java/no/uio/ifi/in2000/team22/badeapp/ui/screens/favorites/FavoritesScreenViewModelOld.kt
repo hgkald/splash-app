@@ -17,8 +17,8 @@ data class FavUiStateOld(
 )
 
 class FavoritesViewModelOld() : ViewModel() {
-    private val _favUiState = MutableStateFlow(FavUiState())
-    val favUiState : StateFlow<FavUiState> = _favUiState.asStateFlow()
+    private val _favUiState = MutableStateFlow(FavUiStateOld())
+    val favUiState : StateFlow<FavUiStateOld> = _favUiState.asStateFlow()
     val favoritesListRepository = FavoritesListRepositoryOld()
 
     init {
