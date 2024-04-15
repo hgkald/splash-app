@@ -32,17 +32,16 @@ import androidx.navigation.compose.rememberNavController
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppTopAppBar
-import no.uio.ifi.in2000.team22.badeapp.ui.components.Favorites.FavToggleButton
 import no.uio.ifi.in2000.team22.badeapp.ui.components.loading.LoadingIndicator
 
-
+/*
 @Composable
 fun FavoritesScreenOld(
     navcontroller : NavController,
-    favoritesViewModel: FavoritesViewModel = viewModel(),
+    favoritesViewModel: FavoritesViewModelOld = viewModel(),
     // swimSpots : List<Swimspot>
 ){
-    val state: State<FavUiState> = favoritesViewModel.favUiState.collectAsState()
+    val state: State<FavUiStateOld> = favoritesViewModel.favUiState.collectAsState()
     //val list : List<Swimspot> = listOf(Swimspot(0, "Åkrasand", 59.250681, 5.194152), Swimspot(1, "Stavasand", 59.232681, 5.184657), Swimspot(2, "Fotvatnet", 59.298138, 5.286767), Swimspot(3, "Sandvesand",59.171176, 5.195650 ))
     val favList : List<Swimspot> = state.value.favList
 
@@ -63,8 +62,8 @@ fun FavoritesScreenOld(
                     FavCard(
                         swimspot = it,
                         state = state,
-                        onClickFavButton = {favoritesViewModel.toggleFavoriteButton(it)},
-                        onClickNav = {TODO()}
+                        //onClickFavButton = {favoritesViewModel.toggleFavoriteButton(it)},
+                        //onClickNav = {TODO()}
                     )
                 }
 
@@ -228,7 +227,10 @@ fun FavSwimspotTypeOld(SwimspotType : String){
 @Composable
 fun FavoriteScreenPreviewOld(){
     val navController : NavController = rememberNavController()
-    val vm : FavoritesViewModel = viewModel()
+    val vm : FavoritesViewModelOld = viewModel()
     val list : List<Swimspot> = listOf(Swimspot(0, "Åkrasand", 59.250681, 5.194152), Swimspot(1, "Stavasand", 59.232681, 5.184657), Swimspot(2, "Fotvatnet", 59.298138, 5.286767), Swimspot(3, "Sandvesand",59.171176, 5.195650 ))
-    FavoritesScreen(navController, vm)
+    FavoritesScreen(navController)
 }
+
+
+ */
