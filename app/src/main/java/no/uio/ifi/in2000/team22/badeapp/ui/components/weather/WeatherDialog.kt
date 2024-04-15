@@ -130,15 +130,16 @@ fun MetAlertInfo(alerts: List<Alert>) {
             horizontalArrangement = Arrangement.Center
         ) {
             if (alerts.isNotEmpty()) {
-                AlertIcon(alert = alerts[0], modifier = Modifier.padding(12.dp))
+                val alert = alerts[alerts.lastIndex]
+                AlertIcon(alert = alert, modifier = Modifier.padding(12.dp))
                 Column {
                     Text(
-                        text = alerts[0].eventAwarenessName,
+                        text = alert.eventAwarenessName,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight(600)
                     )
                     Text(
-                        text = "${alerts[0].riskMatrixColor.norsk} nivå",
+                        text = "${alert.riskMatrixColor.norsk} nivå",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
