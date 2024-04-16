@@ -31,6 +31,7 @@ class FavoritesScreenViewModel : ViewModel(){
     }
 
     fun toggleFavorite(swimspot: Swimspot){
+
         Log.d("toggleFavorite", "")
         if (swimspot in favoritesListRepository.getFavList()){
             favoritesListRepository.removeFavorite(swimspot = swimspot)
@@ -38,6 +39,12 @@ class FavoritesScreenViewModel : ViewModel(){
         } else {
             favoritesListRepository.addFavorite(swimspot = swimspot)
             Log.d("toggleFavorite", "Added $swimspot")
+        }
+
+        viewModelScope.launch {
+            _favUiState.update {
+                it.copy(favList = favoritesListRepository.getFavList())
+            }
         }
     }
 

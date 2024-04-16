@@ -25,7 +25,7 @@ class FavoritesListRepository{
     }
 
     fun getFavList() : List<Swimspot>{
-        return favList
+        return favList.toMutableList()
     }
 
 }
