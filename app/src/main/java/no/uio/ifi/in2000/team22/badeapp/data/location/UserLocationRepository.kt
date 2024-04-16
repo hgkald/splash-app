@@ -21,9 +21,8 @@ class UserLocationRepository {
         Log.i("LocationRepository", "Fetching last known location")
         var locationProvider: DeviceLocationProvider? = null
         val request = LocationProviderRequest.Builder()
-            //Use if getting constant location updates:
-            //.interval(IntervalSettings.Builder().interval(0L).minimumInterval(0L).maximumInterval(0L).build())
-            //.displacement(0F)
+            .interval(IntervalSettings.Builder().interval(0L).minimumInterval(0L).maximumInterval(0L).build())
+            .displacement(0F)
             .accuracy(AccuracyLevel.HIGHEST)
             .build()
 

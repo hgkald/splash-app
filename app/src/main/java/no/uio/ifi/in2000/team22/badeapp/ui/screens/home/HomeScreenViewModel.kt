@@ -46,7 +46,8 @@ data class WeatherUiState(
 data class MapUiState(
     val mapViewportState: MapViewportState = MapViewportState(),
     val mapPointsState: List<PointAnnotationOptions> = listOf(),
-    val mapPositionState: Point = Point.fromLngLat(10.7215, 59.9464)
+    val mapPositionState: Point = Point.fromLngLat(10.7215, 59.9464),
+    val gpsLocationKnown: Boolean = false
 )
 
 @OptIn(MapboxExperimental::class)
@@ -54,19 +55,14 @@ class HomeScreenViewModel : ViewModel() {
     private val _swimSpotUiState = MutableStateFlow(SwimSpotUiState())
     private val _weatherUiState = MutableStateFlow(WeatherUiState())
     private val _mapUiState = MutableStateFlow(MapUiState())
-    private val _locationPermissionGranted = MutableStateFlow<Boolean?>(null)
+    private val _lastKnownLocation = MutableStateFlow<Point?>(null)
 
     val swimSpotUiState: StateFlow<SwimSpotUiState> = _swimSpotUiState.asStateFlow()
     val weatherUiState: StateFlow<WeatherUiState> = _weatherUiState.asStateFlow()
     val mapUiState: StateFlow<MapUiState> = _mapUiState.asStateFlow()
-    val locationPermissionGranted: StateFlow<Boolean?> = _locationPermissionGranted.asStateFlow()
-
-    fun updatePermissionState(isGranted: Boolean) {
-        _locationPermissionGranted.value = isGranted
-    }
 
     val locationRepo = UserLocationRepository()
-    suspend fun getLastKnownLocation() : Location? {
+    fun getLastKnownLocation() : Location? {
         return locationRepo.getLastKnownLocation()
     }
 
@@ -77,6 +73,7 @@ class HomeScreenViewModel : ViewModel() {
 
     val locationforecastRepo = LocationforecastRepository(LocationforecastDataSource())
     suspend fun getCurrentWeather(lat: Double, lon: Double): Weather {
+        Log.i("HomeScreenViewModel", "Getting weather for location: lat: $lat, lon: $lon")
         return locationforecastRepo.fetchCurrentWeather(lat, lon)
     }
 
@@ -106,18 +103,29 @@ class HomeScreenViewModel : ViewModel() {
         }
     }
 
+    fun isGpsLocationKnown(bool: Boolean) {
+        _mapUiState.update {
+            it.copy(
+                gpsLocationKnown = bool
+            )
+        }
+    }
+
+    fun updateLastKnownLocation() {
+        val location = getLastKnownLocation()
+        if (location != null) {
+            _lastKnownLocation.value =
+                Point.fromLngLat(location.longitude, location.latitude)
+            Log.i("HomeViewModel", "updateLastKnownLocation(): lat: ${location.latitude}, lon: ${location.longitude}")
+        }
+    }
+
     init {
         viewModelScope.launch {
             val lat = _mapUiState.value.mapPositionState.latitude()
             val lon = _mapUiState.value.mapPositionState.longitude()
 
-            val lastLocation  = getLastKnownLocation()
-            Log.i("HomeViewModel", "getLastKnownLocation(): lat: $lat, lon: $lon")
-            /*if (lastLocation != null) {
-                lat = lastLocation.latitude
-                lon = lastLocation.longitude
-                Log.i("HomeViewModel", "getLastKnownLocation(): lat: $lat, lon: $lon")
-            }*/
+            updateLastKnownLocation()
 
             _swimSpotUiState.update {
                 it.copy(swimSpotList = SwimSpotOverviewRepository.swimSpots)

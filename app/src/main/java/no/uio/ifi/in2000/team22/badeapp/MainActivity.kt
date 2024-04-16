@@ -20,6 +20,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import no.uio.ifi.in2000.team22.badeapp.data.SwimspotDataSource
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreen
@@ -29,19 +31,9 @@ import no.uio.ifi.in2000.team22.badeapp.ui.screens.swimspot.SwimspotScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.theme.BadeappTheme
 
 class MainActivity : ComponentActivity() {
-    private val homeScreenViewModel: HomeScreenViewModel by viewModels()
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            homeScreenViewModel.updatePermissionState(isGranted)
-        }
-
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
 
         setContent {
             BadeappTheme {
@@ -54,8 +46,7 @@ class MainActivity : ComponentActivity() {
 
                     NavHost(navController = navController, startDestination = "home") {
                         composable("home") { entry ->
-                            val backStackEntry = remember(entry) { navController.getBackStackEntry("home") }
-                            HomeScreen(navController, homeScreenViewModel)
+                            HomeScreen(navController)
                         }
                         composable("favorites") { FavoritesScreen(navController) }
                         composable("search") { SearchScreen(navController) }
