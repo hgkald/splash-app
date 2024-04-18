@@ -53,8 +53,6 @@ class MainActivity : ComponentActivity() {
                         composable("swimspot") { SwimspotScreen(navController) }
                         //settings?
                     }
-                    val x = SwimspotDataSource(this)
-                    x.lesFraFil()
                 }
             }
         }
