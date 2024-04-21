@@ -17,7 +17,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppTopAppBar
@@ -26,9 +25,10 @@ import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.weatherIconDrawabl
 @Composable
 fun SwimspotScreen(
     navController: NavController,
-    swimspotViewModel: SwimspotViewModel = viewModel()
+    swimspotViewModel: SwimspotViewModel
 ) {
-    val state: State<SwimspotUiState> = swimspotViewModel.swimSpotUiState.collectAsState()
+    val swimspotState: State<SwimspotUiState> = swimspotViewModel.swimSpotUiState.collectAsState()
+    val weatherState: State<WeatherUiState> = swimspotViewModel.weatherUiState.collectAsState()
 
     Scaffold(
         topBar = { BadeAppTopAppBar() },
@@ -40,13 +40,16 @@ fun SwimspotScreen(
                 .fillMaxWidth()
         )
         {
-            SwimspotOverview(state = state)
+            SwimspotOverview(
+                swimspotState = swimspotState,
+                weatherState = weatherState
+            )
         }
     }
 }
 
 @Composable
-fun SwimspotOverview(state: State<SwimspotUiState>) {
+fun SwimspotOverview(swimspotState: State<SwimspotUiState>, weatherState: State<WeatherUiState>) {
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
@@ -54,13 +57,13 @@ fun SwimspotOverview(state: State<SwimspotUiState>) {
             .fillMaxWidth()
     ) {
         Text(
-            text = "Sørenga",
-            style = MaterialTheme.typography.displayLarge,
+            text = "${swimspotState.value.swimspot?.name}",
+            style = MaterialTheme.typography.displayMedium,
             modifier = Modifier.padding(bottom = 14.dp)
         )
 
         //TODO: Should problably include more information about each alert, and maybe a message to go check local weatherforecast to get more info
-        AlertOverview(state.value.alerts)
+        AlertOverview(weatherState.value.alerts)
         Spacer(modifier = Modifier.height(20.dp))
 
         Column(
@@ -69,10 +72,11 @@ fun SwimspotOverview(state: State<SwimspotUiState>) {
             modifier = Modifier.fillMaxWidth()
         ) {
             WeatherOverview(
-                waterTemp = state.value.ocean?.waterTemperature,
-                airTemp = state.value.weather?.airTemperature,
-                uvIndex = state.value.weather?.uvIndex,
-                weatherIcon = weatherIconDrawable[state.value.weather?.symbolCode]
+                waterTemp = weatherState.value.water?.temperature,
+                waterTempTime = weatherState.value.water?.time,
+                airTemp = weatherState.value.weather?.airTemperature,
+                uvIndex = weatherState.value.weather?.uvIndex,
+                weatherIcon = weatherIconDrawable[weatherState.value.weather?.symbolCode]
             )
         }
     }

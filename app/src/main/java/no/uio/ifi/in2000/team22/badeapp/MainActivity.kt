@@ -1,39 +1,36 @@
 package no.uio.ifi.in2000.team22.badeapp
 
-import android.Manifest
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.navigation.NavHostController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import no.uio.ifi.in2000.team22.badeapp.data.SwimspotDataSource
+import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreenViewModel
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.search.SearchScreen
+import no.uio.ifi.in2000.team22.badeapp.ui.screens.search.SearchScreenViewModel
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.swimspot.SwimspotScreen
+import no.uio.ifi.in2000.team22.badeapp.ui.screens.swimspot.SwimspotViewModel
 import no.uio.ifi.in2000.team22.badeapp.ui.theme.BadeappTheme
 
 class MainActivity : ComponentActivity() {
+    private lateinit var swimspotsRepository: SwimspotsRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        swimspotsRepository = SwimspotsRepository(applicationContext)
 
         setContent {
             BadeappTheme {
@@ -45,12 +42,26 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
 
                     NavHost(navController = navController, startDestination = "home") {
-                        composable("home") { entry ->
-                            HomeScreen(navController)
+                        composable("home") {
+                            val homeViewModel: HomeScreenViewModel = viewModel(
+                                factory =
+                                HomeScreenViewModel.provideFactory(swimspotsRepository)
+                            )
+                            HomeScreen(navController, homeViewModel)
                         }
                         composable("favorites") { FavoritesScreen(navController) }
-                        composable("search") { SearchScreen(navController) }
-                        composable("swimspot") { SwimspotScreen(navController) }
+                        composable("search") {
+                            val searchViewModel: SearchScreenViewModel = viewModel(
+                                factory = SearchScreenViewModel.provideFactory(swimspotsRepository)
+                            )
+                            SearchScreen(navController, searchViewModel)
+                        }
+                        composable("swimspot/{swimspotId}") {
+                            val swimspotViewModel: SwimspotViewModel = viewModel(
+                                factory = SwimspotViewModel.provideFactory(swimspotsRepository)
+                            )
+                            SwimspotScreen(navController, swimspotViewModel)
+                        }
                         //settings?
                     }
                 }

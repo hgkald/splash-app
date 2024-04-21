@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
@@ -27,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -37,6 +36,8 @@ import no.uio.ifi.in2000.team22.badeapp.model.uv.UV
 import no.uio.ifi.in2000.team22.badeapp.model.uv.doubleToUV
 import no.uio.ifi.in2000.team22.badeapp.model.uv.uvToNorwegian
 import no.uio.ifi.in2000.team22.badeapp.ui.components.loading.LoadingIndicator
+import java.time.Duration
+import java.time.Instant
 import kotlin.math.roundToInt
 
 @Preview(showSystemUi = true)
@@ -44,6 +45,7 @@ import kotlin.math.roundToInt
 fun WeatherOverviewPreview() {
     WeatherOverview(
         waterTemp = 20.0,
+        waterTempTime = Instant.now(),
         airTemp = 21.0,
         uvIndex = 2.0,
         weatherIcon = R.drawable.partlycloudy_day
@@ -53,16 +55,17 @@ fun WeatherOverviewPreview() {
 @Composable
 fun WeatherOverview(
     waterTemp: Double?,
+    waterTempTime: Instant?,
     airTemp: Double?,
     uvIndex: Double?,
     @DrawableRes weatherIcon: Int?,
 ) {
     Column(
-        modifier = Modifier
-            .width(400.dp)
+        modifier = Modifier.widthIn(max = 400.dp)
     ) {
         Content(
             waterTemp = waterTemp,
+            waterTempTime = waterTempTime,
             airTemp = airTemp,
             uvIndex = uvIndex,
             weatherIcon = weatherIcon
@@ -79,6 +82,7 @@ fun WeatherOverview(
 @Composable
 private fun Content(
     waterTemp: Double?,
+    waterTempTime: Instant?,
     airTemp: Double?,
     uvIndex: Double?,
     @DrawableRes weatherIcon: Int?,
@@ -100,12 +104,18 @@ private fun Content(
         modifier = Modifier.padding(bottom = 9.dp)
     )
     WideInfoCard {
-        if (waterTemp == null) {
-            LoadingIndicator(onErrorText = "Kunne ikke hente temperaturen i vannet")
+        if (waterTemp == null || waterTempTime == null) {
+            LoadingIndicator(onErrorText = "Ingen registrert badetemperatur for dette badestedet")
         } else {
+            val timeSince = Duration.between(waterTempTime, Instant.now()).toDays()
+
             Text(
-                text = "${waterTemp.roundToInt()}° i vannet",
+                text = "${waterTemp}° i vannet",
                 style = MaterialTheme.typography.displayMedium
+            )
+            Text(
+                text = "Sist målt $timeSince dager siden",
+                style = MaterialTheme.typography.bodySmall
             )
         }
     }
@@ -130,19 +140,19 @@ private fun Content(
         ) {
 
             //Shows the current weather as a drawable
-            if (weatherIcon != null) {
-                SmallInfoCard(
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = weatherIcon),
-                        contentDescription = weatherIcon.toString(),
-                    )
-                    Text(
-                        text = "Værforhold",
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                }
+            SmallInfoCard(
+                verticalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    painter = painterResource(id = weatherIcon),
+                    contentDescription = weatherIcon.toString(),
+                    modifier = Modifier.weight(0.5f, fill = true)
+                )
+                Text(
+                    text = "Værforhold",
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.weight(0.15f, fill = true)
+                )
             }
 
             //Shows current air temperature
@@ -150,13 +160,12 @@ private fun Content(
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
                 Text(
-                    text = "${airTemp?.roundToInt()}°",
+                    text = "${airTemp.roundToInt()}°",
                     style = MaterialTheme.typography.displayMedium,
                 )
                 Text(
                     text = "Lufttemperatur",
                     style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier
                 )
             }
 
@@ -169,13 +178,10 @@ private fun Content(
                 Text(
                     text = "${uvIndex?.roundToInt()}",
                     style = MaterialTheme.typography.displayMedium,
-
-                    )
+                )
                 Text(
                     text = "${uvToNorwegian(uvValue)} UV-nivå",
                     style = MaterialTheme.typography.labelSmall,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
                 )
             }
         }
@@ -219,7 +225,7 @@ fun SmallInfoCard(
 
     Card(
         modifier = modifier
-            .size(110.dp)
+            .sizeIn(maxHeight = 110.dp, maxWidth = 110.dp)
             .clickable(enabled = clickable, onClick = onClick)
     ) {
         Box(

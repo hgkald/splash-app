@@ -28,7 +28,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -38,12 +37,13 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
+import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapboxExperimental
 import com.mapbox.maps.Style
 import com.mapbox.maps.dsl.cameraOptions
-import com.mapbox.maps.extension.compose.MapEvents
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotationGroup
@@ -52,6 +52,7 @@ import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.annotation.AnnotationConfig
 import com.mapbox.maps.plugin.annotation.AnnotationSourceOptions
 import com.mapbox.maps.plugin.annotation.ClusterOptions
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.generated.LocationComponentSettings
 import com.mapbox.maps.plugin.scalebar.generated.ScaleBarSettings
@@ -62,12 +63,13 @@ import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.WeatherDialog
 import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.WeatherFloatingActionButton
 import no.uio.ifi.in2000.team22.badeapp.ui.permissions.LocationPermissionDialog
 
+private data class SwimspotId(val id: String)
 
 @OptIn(MapboxExperimental::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     navcontroller: NavController,
-    homeScreenViewModel: HomeScreenViewModel = viewModel()
+    homeScreenViewModel: HomeScreenViewModel
 ) {
     var showWeatherDialog by remember { mutableStateOf(false) }
     var lastKnownLocation by remember { mutableStateOf(Point.fromLngLat(10.0, 59.0)) }
@@ -91,6 +93,7 @@ fun HomeScreen(
                 object : CancellationToken() {
                     override fun onCanceledRequested(p0: OnTokenCanceledListener) =
                         CancellationTokenSource().token
+
                     override fun isCancellationRequested() = false
                 })
                 .addOnSuccessListener { location: Location? ->
@@ -151,7 +154,6 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-
             val mapViewportState = rememberMapViewportState {
                 // Set the initial camera position
                 setCameraOptions {
@@ -167,13 +169,6 @@ fun HomeScreen(
                     enabled;
                     textSize = 25.0F
                 }, //correct UU?
-                mapEvents = MapEvents(
-                    onCameraChanged = {
-                        Log.i("MAP", it.cameraState.zoom.toString())
-                        Log.i("MAP", it.cameraState.center.coordinates().toString())
-                        //homeScreenViewModel.updatePosition(it.cameraState.center)
-                    },
-                ),
                 mapInitOptionsFactory = { context ->
                     MapInitOptions(
                         context = context,
@@ -187,7 +182,17 @@ fun HomeScreen(
                 }
             ) {
                 PointAnnotationGroup(
-                    annotations = mapUiState.value.mapPointsState.map { it.withIconImage(marker) },
+                    annotations = swimSpotUiState.value.swimspotList.map { swimspot ->
+                        PointAnnotationOptions()
+                            .withPoint(Point.fromLngLat(swimspot.lon, swimspot.lat))
+                            .withIconImage(marker)
+                            .withData(
+                                Gson().fromJson(
+                                    "{id: ${swimspot.id}}",
+                                    JsonElement::class.java
+                                )
+                            )
+                    },
                     annotationConfig = AnnotationConfig(
                         annotationSourceOptions = AnnotationSourceOptions(
                             clusterOptions = ClusterOptions(
@@ -202,7 +207,9 @@ fun HomeScreen(
                         )
                     ),
                     onClick = {
-                        navcontroller.navigate("swimspot")
+                        val id = Gson().fromJson(it.getData(), SwimspotId::class.java).id
+                        Log.d("HomeScreen", "Navigating to swimspot: $id")
+                        navcontroller.run { navigate("swimspot/${id}") }
                         true
                     }
                 )

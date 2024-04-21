@@ -1,6 +1,7 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.screens.search
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -53,6 +54,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,19 +78,26 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.NavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team22.badeapp.data.SwimspotDataSource
+import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsDataSource
+import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
+import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreenViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(navcontroller: NavController) {
+fun SearchScreen(
+    navcontroller: NavController,
+    searchScreenViewModel: SearchScreenViewModel
+    ) {
     var input by remember { mutableStateOf("") }
     val keyboard = LocalSoftwareKeyboardController.current
     var seAlleKnapp by remember { mutableStateOf(true) }
     val (visForslag, settForslag) =  remember { mutableStateOf(true) }
     val scrollState: LazyListState = rememberLazyListState()
+
+    val searchUiState = searchScreenViewModel.searchUiState.collectAsState()
 
     keyboard?.show()
 
@@ -113,8 +122,7 @@ fun SearchScreen(navcontroller: NavController) {
         )
     {
         /* SØKEFUNKSJON */
-        val data = SwimspotDataSource(LocalContext.current)
-        val x = data.lesFraFil()
+        val x = searchUiState.value.swimspots
         
         LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -209,7 +217,7 @@ fun SearchScreen(navcontroller: NavController) {
                 }
 
                 if (visForslag) {
-                    VisFemForslag(navcontroller)
+                    VisFemForslag(navcontroller, searchUiState.value.swimspots)
                 }
             }
         }
@@ -240,7 +248,7 @@ fun Kort(navcontroller: NavController, it : Swimspot){
     Card(
         modifier = Modifier
             .size(width = 500.dp, height = 100.dp),
-        onClick = { navcontroller.navigate("swimspot") },
+        onClick = { navcontroller.navigate("swimspot/${it.id}") },
         border = BorderStroke(2.dp, Color.LightGray)
     )
     {
@@ -260,21 +268,19 @@ fun Kort(navcontroller: NavController, it : Swimspot){
 
 
 @Composable
-fun hentFemForslag(): MutableList<Swimspot> {
-    val data = SwimspotDataSource(LocalContext.current)
-    val les = data.lesFraFil()
+fun hentFemForslag(swimspots: List<Swimspot>): MutableList<Swimspot> {
     val newList = mutableListOf<Swimspot>()
 
     for (i in 1..5){
-        newList.add(les.random())
+        newList.add(swimspots.random())
     }
     return newList
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VisFemForslag(navcontroller: NavController) {
-    val x = hentFemForslag()
+fun VisFemForslag(navcontroller: NavController, swimspots: List<Swimspot>) {
+    val x = hentFemForslag(swimspots)
 
     x.forEach {
         Row(horizontalArrangement = Arrangement.SpaceBetween) {
@@ -285,7 +291,7 @@ fun VisFemForslag(navcontroller: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(end = 20.dp),
-                    onClick = { navcontroller.navigate("swimspot") }  ,
+                    onClick = { navcontroller.navigate("swimspot/${it.id}") }  ,
                         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                 ){
                     Row(verticalAlignment = Alignment.CenterVertically){
