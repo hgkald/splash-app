@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team22.badeapp.data.enTur
 
+import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -29,7 +30,7 @@ class EnTurDataSource {
                 parameters.append("layers", layers)
             }
         }
-        //Log.d("EnTurDataSource", "HTTP status : ${response.status}")
+        Log.d("EnTurDataSource", "HTTP status : ${response.status}")
         return response.body<Root>()
     }
 
@@ -46,7 +47,7 @@ class EnTurDataSource {
             val label = properties.label
 
             stops.add(StopPlace(coordinates[1], coordinates[0], name, type, label))
-            //Log.d("EnTurDataSource", "Stop : $type + $name")
+            Log.d("EnTurDataSource", "Stop : $type + $name")
 
         }
         return stops

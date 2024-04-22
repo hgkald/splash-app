@@ -6,15 +6,21 @@ import no.uio.ifi.in2000.team22.badeapp.data.enTur.EnTurRepository
 import no.uio.ifi.in2000.team22.badeapp.data.enTur.StopPlace
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Before
 import org.junit.Test
 
 /**
  * Tests for EnTur API
  */
 class EnTurUnitTest {
+    private lateinit var enTurRepo: EnTurRepository
+    private lateinit var stopPlaces: List<StopPlace>
 
-    private val enTurRepo = EnTurRepository()
-    private var stopPlaces = runBlocking { enTurRepo.getStops(59.911491, 10.757933, 10, 10) }
+    @Before
+    fun setup() {
+        enTurRepo = EnTurRepository()
+        stopPlaces = runBlocking { enTurRepo.getStops(59.911491, 10.757933, 10, 10) }
+    }
 
 
     /**
@@ -38,7 +44,7 @@ class EnTurUnitTest {
         //Arrange and act
         val first = stopPlaces[0].name
         //Assert
-        println("Name of first stop: $first")
+//        println("Name of first stop: $first")
         assertNotNull(first)
     }
 
@@ -55,7 +61,7 @@ class EnTurUnitTest {
         }
 
         //Assert
-        println("Category list: $types")
+//        println("Category list: $types")
         assertNotNull(stopPlaces[0].category[0])
     }
 
