@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppTopAppBar
+import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.AlertOverview
 import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.weatherIconDrawable
 
 @Composable
@@ -46,6 +47,9 @@ fun SwimspotScreen(
             )
         }
     }
+
+
+
 }
 
 @Composable
@@ -62,8 +66,8 @@ fun SwimspotOverview(swimspotState: State<SwimspotUiState>, weatherState: State<
             modifier = Modifier.padding(bottom = 14.dp)
         )
 
-        //TODO: Should problably include more information about each alert, and maybe a message to go check local weatherforecast to get more info
         AlertOverview(weatherState.value.alerts)
+
         Spacer(modifier = Modifier.height(20.dp))
 
         Column(

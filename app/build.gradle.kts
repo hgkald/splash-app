@@ -94,6 +94,9 @@ dependencies {
     //mapbox
     implementation("com.mapbox.maps:android:${versions.MAPBOX}")
     implementation("com.mapbox.extension:maps-compose:${versions.MAPBOX}")
+    implementation("com.mapbox.mapboxsdk:mapbox-sdk-services:6.15.0")
+    implementation("com.mapbox.mapboxsdk:mapbox-sdk-core:6.15.0")
+    implementation("androidx.annotation:annotation:1.7.1")
 
     //Navigation
     implementation("androidx.navigation:navigation-fragment-ktx:${versions.NAVIGATION}")

@@ -13,6 +13,7 @@ class UserLocationRepository {
     private val locationService: LocationService = LocationServiceFactory.getOrCreate()
     private var lastLocation: Location? = null
 
+    /*
     init {
         fetchLastKnownLocation()
     }
@@ -44,5 +45,5 @@ class UserLocationRepository {
     fun getLastKnownLocation(): Location? {
         fetchLastKnownLocation()
         return this.lastLocation
-    }
+    }*/
 }

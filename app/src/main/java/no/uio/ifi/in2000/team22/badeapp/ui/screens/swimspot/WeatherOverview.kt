@@ -105,7 +105,10 @@ private fun Content(
     )
     WideInfoCard {
         if (waterTemp == null || waterTempTime == null) {
-            LoadingIndicator(onErrorText = "Ingen registrert badetemperatur for dette badestedet")
+            LoadingIndicator(
+                onErrorText = "Ingen registrert badetemperatur for dette badestedet",
+                modifier = Modifier.fillMaxSize()
+            )
         } else {
             val timeSince = Duration.between(waterTempTime, Instant.now()).toDays()
 
@@ -128,7 +131,8 @@ private fun Content(
                 .padding(top = 12.dp)
         ) {
             LoadingIndicator(
-                onErrorText = "Kunne ikke hente værinformasjon for badestedet"
+                onErrorText = "Kunne ikke hente værinformasjon for badestedet",
+                modifier = Modifier.fillMaxSize()
             )
         }
     } else {

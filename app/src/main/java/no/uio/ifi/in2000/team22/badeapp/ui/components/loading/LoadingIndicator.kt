@@ -1,9 +1,8 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.components.loading
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Warning
@@ -31,33 +30,41 @@ fun LoadingIndicatorPreview() {
 }
 
 @Composable
-fun LoadingIndicator(onErrorText: String) {
-    var showLoading by remember { mutableStateOf(false) }
+fun LoadingIndicator(
+    modifier: Modifier = Modifier,
+    onErrorText: String = "",
+) {
+    var showLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(showLoading) {
         delay(5000)
         showLoading = false
     }
 
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
     ) {
         if (showLoading) {
             CircularProgressIndicator()
         } else {
-            Icon(
-                imageVector = Icons.Rounded.Warning,
-                contentDescription = "warning",
-                modifier = Modifier.size(40.dp),
-                tint = MaterialTheme.colorScheme.onErrorContainer
-            )
-            Text(
-                text = onErrorText,
-                textAlign = TextAlign.Center,
-            )
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Warning,
+                    contentDescription = "warning",
+                    modifier = Modifier.size(40.dp),
+                    tint = MaterialTheme.colorScheme.onErrorContainer
+                )
+                if (onErrorText != "") {
+                    Text(
+                        text = onErrorText,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
         }
     }
 }
