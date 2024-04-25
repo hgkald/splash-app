@@ -96,7 +96,7 @@ class UserLocationRepository(
     fun startLocationUpdates() {
         val locationRequest = LocationRequest.Builder(
             Priority.PRIORITY_LOW_POWER,
-            10_000
+            5_000
         ).build()
 
         if (checkPermissions() == true) {
