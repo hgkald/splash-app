@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.screens.home
 
+import android.location.Location
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -8,8 +9,11 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.MapboxExperimental
 import com.mapbox.maps.extension.compose.animation.viewport.MapViewportState
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team22.badeapp.data.location.UserLocationRepository
@@ -46,6 +50,11 @@ data class MapUiState @OptIn(MapboxExperimental::class) constructor(
     val gpsLocationKnown: Boolean = false,
 )
 
+data class LocationUiState(
+    val lastKnownLocation: Location? = null,
+    val locationPermissions: Boolean = false
+)
+
 @OptIn(MapboxExperimental::class)
 
 class HomeScreenViewModel(
@@ -61,6 +70,17 @@ class HomeScreenViewModel(
     val swimSpotUiState: StateFlow<SwimSpotUiState> = _swimSpotUiState.asStateFlow()
     val weatherUiState: StateFlow<WeatherUiState> = _weatherUiState.asStateFlow()
     val mapUiState: StateFlow<MapUiState> = _mapUiState.asStateFlow()
+    val locationUiState: StateFlow<LocationUiState> = locationRepository.observe()
+        .map {
+            LocationUiState(
+                lastKnownLocation = it.lastKnownLocation,
+                locationPermissions = it.permissionGranted
+            )
+        }.stateIn(
+            viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = LocationUiState()
+        )
 
     val locationforecastRepo = LocationforecastRepository(LocationforecastDataSource())
     suspend fun getCurrentWeather(lat: Double, lon: Double): Weather {
@@ -73,13 +93,19 @@ class HomeScreenViewModel(
         return metAlertRepo.getAlertsForPosition(lat, lon)
     }
 
-    fun isGpsLocationKnown(bool: Boolean) {
-        _mapUiState.update {
-            it.copy(
-                gpsLocationKnown = bool
-            )
+    fun updateLocationPermissions() {
+        viewModelScope.launch {
+            locationRepository.checkPermissions()
         }
     }
+
+//    fun isGpsLocationKnown(bool: Boolean) {
+//        _mapUiState.update {
+//            it.copy(
+//                gpsLocationKnown = bool
+//            )
+//        }
+//    }
 
     fun updateWeatherLocation(point: Point) {
         viewModelScope.launch {

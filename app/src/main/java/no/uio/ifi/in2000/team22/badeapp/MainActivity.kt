@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
 
         swimspotsRepository = SwimspotsRepository(applicationContext)
         locationRepository = UserLocationRepository(applicationContext)
+        locationRepository.startLocationUpdates()
 
         setContent {
             BadeappTheme {
@@ -73,5 +74,15 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        locationRepository.startLocationUpdates()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        locationRepository.stopLocationUpdates()
     }
 }
