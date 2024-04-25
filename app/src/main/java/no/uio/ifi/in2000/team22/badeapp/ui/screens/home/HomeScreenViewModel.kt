@@ -132,7 +132,7 @@ class HomeScreenViewModel(
             updatingWeather.set(true)
 
             var lastUpdated = _weatherUiState.value.lastWeatherLocationUpdate
-            while (ChronoUnit.SECONDS.between(lastUpdated, Instant.now()) < 5) {
+            while (ChronoUnit.SECONDS.between(lastUpdated, Instant.now()) < 10) {
                 Log.d("HomeScreenViewModel", "Delaying weather update")
                 delay(2000)
                 lastUpdated = _weatherUiState.value.lastWeatherLocationUpdate
