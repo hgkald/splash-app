@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team22.badeapp.data.frostApi.FrostRepository
 import no.uio.ifi.in2000.team22.badeapp.data.location.UserLocationRepository
 import no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi.LocationforecastDataSource
 import no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi.LocationforecastRepository
@@ -49,9 +48,13 @@ data class MapUiState @OptIn(MapboxExperimental::class) constructor(
 
 @OptIn(MapboxExperimental::class)
 
-class HomeScreenViewModel(private val swimspotsRepository: SwimspotsRepository) : ViewModel() {
+class HomeScreenViewModel(
+    private val swimspotsRepository: SwimspotsRepository,
+    private val locationRepository: UserLocationRepository
+) : ViewModel() {
     private val _swimSpotUiState = MutableStateFlow(SwimSpotUiState())
     private val _weatherUiState = MutableStateFlow(WeatherUiState())
+
     @OptIn(MapboxExperimental::class)
     private val _mapUiState = MutableStateFlow(MapUiState())
 
@@ -136,10 +139,13 @@ class HomeScreenViewModel(private val swimspotsRepository: SwimspotsRepository) 
 
     @Suppress("UNCHECKED_CAST")
     companion object {
-        fun provideFactory(swimspotsRepository: SwimspotsRepository): ViewModelProvider.Factory =
+        fun provideFactory(
+            swimspotsRepository: SwimspotsRepository,
+            locationRepository: UserLocationRepository
+        ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return HomeScreenViewModel(swimspotsRepository) as T
+                    return HomeScreenViewModel(swimspotsRepository, locationRepository) as T
                 }
             }
     }
