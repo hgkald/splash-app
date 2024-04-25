@@ -76,7 +76,6 @@ fun HomeScreen(
 ) {
     var showWeatherDialog by remember { mutableStateOf(false) }
     var showWeatherInfoButton by remember { mutableStateOf(true) }
-//    var userGpsLocation by remember { mutableStateOf<Point?>(null) }
     var weatherLocationName by remember { mutableStateOf<String?>(null) }
 
     var showLocationPermissionDialog by remember { mutableStateOf(false) }
@@ -85,42 +84,6 @@ fun HomeScreen(
     val weatherUiState = homeScreenViewModel.weatherUiState.collectAsState()
     val mapUiState = homeScreenViewModel.mapUiState.collectAsState()
     val locationUiState = homeScreenViewModel.locationUiState.collectAsState()
-
-//    //TODO: Should be moved to the viewmodel
-//    val fusedLocationClient: FusedLocationProviderClient =
-//        LocationServices.getFusedLocationProviderClient(LocalContext.current)
-
-//    //TODO: Should be moved to the viewmodel
-//    fun saveLastKnownLocation() {
-//        try {
-//            fusedLocationClient.getCurrentLocation(
-//                Priority.PRIORITY_HIGH_ACCURACY,
-//                object : CancellationToken() {
-//                    override fun onCanceledRequested(p0: OnTokenCanceledListener) =
-//                        CancellationTokenSource().token
-//
-//                    override fun isCancellationRequested() = false
-//                })
-//                .addOnSuccessListener { location: Location? ->
-//                    if (location != null) {
-//                        userGpsLocation = Point.fromLngLat(location.longitude, location.latitude)
-//                        homeScreenViewModel.isGpsLocationKnown(true)
-//                        Log.i(
-//                            "HomeScreen",
-//                            "savelastKnownLocation(): ${userGpsLocation!!.longitude()} ${userGpsLocation!!.latitude()}"
-//                        )
-//                    } else {
-//                        Log.i("HomeScreen", "savelastKnownLocation(): Could not get location")
-//                        userGpsLocation = null
-//                        homeScreenViewModel.isGpsLocationKnown(false)
-//                    }
-//                }
-//        } catch (e: SecurityException) {
-//            Log.w("HomeScreen", "Cannot get last location: Inadequate permissions")
-//            Log.w("HomeScreen", e.message.toString())
-//            Log.w("HomeScreen", e.stackTrace.toString())
-//        }
-//    }
 
     val locationPermissionsState = rememberMultiplePermissionsState(
         permissions = listOf(
