@@ -1,49 +1,58 @@
 package no.uio.ifi.in2000.team22.badeapp.data.location
 
-import android.util.Log
-import com.mapbox.common.location.AccuracyLevel
-import com.mapbox.common.location.DeviceLocationProvider
-import com.mapbox.common.location.IntervalSettings
-import com.mapbox.common.location.Location
-import com.mapbox.common.location.LocationProviderRequest
-import com.mapbox.common.location.LocationService
-import com.mapbox.common.location.LocationServiceFactory
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
-class UserLocationRepository {
-    private val locationService: LocationService = LocationServiceFactory.getOrCreate()
-    private var lastLocation: Location? = null
+data class LocationState(
+    val lastKnownLocation: Location? = null,
+    val permissionGranted: Boolean = false
+)
 
-    /*
-    init {
-        fetchLastKnownLocation()
-    }
+class UserLocationRepository(
+    val context: Context
+) {
+    val locationClient =
+        LocationServices.getFusedLocationProviderClient(context)
+    var lastKnownLocation: Location? = null;
 
-    private fun fetchLastKnownLocation() {
-        Log.i("LocationRepository", "Fetching last known location")
-        var locationProvider: DeviceLocationProvider? = null
-        val request = LocationProviderRequest.Builder()
-            .interval(IntervalSettings.Builder().interval(0L).minimumInterval(0L).maximumInterval(0L).build())
-            .displacement(0F)
-            .accuracy(AccuracyLevel.HIGHEST)
-            .build()
+    private var _locationState = MutableStateFlow(LocationState())
 
-        val result = locationService.getDeviceLocationProvider(request)
-        if (result.isValue) {
-            locationProvider = result.value!!
+    fun observe(): StateFlow<LocationState> = _locationState.asStateFlow()
 
-            val lastLocationCancelable = locationProvider.getLastLocation { loc ->
-                loc?.let {
-                    Log.i("UserLocationRepository", "Last location received: $loc")
-                    this.lastLocation = loc
-                }
-            }
-        } else {
-            Log.e("LocationRepository", "Failed to get device location provider")
+    /**
+     * Checks if permissions for location has been granted
+     *
+     * @return [true] if permissions has been granted, or [false] if not granted.
+     */
+    fun checkPermissions(): Boolean {
+        val fineLocation = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val coarseLocation = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        _locationState.update {
+            it.copy(
+                permissionGranted = (fineLocation || coarseLocation)
+            )
         }
+
+        return (fineLocation || coarseLocation)
     }
 
-    fun getLastKnownLocation(): Location? {
-        fetchLastKnownLocation()
-        return this.lastLocation
-    }*/
+    init {
+        checkPermissions()
+    }
 }
