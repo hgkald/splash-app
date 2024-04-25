@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapboxExperimental
 import com.mapbox.maps.extension.compose.animation.viewport.MapViewportState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,9 @@ import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
 import no.uio.ifi.in2000.team22.badeapp.model.alerts.Alert
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 data class SwimSpotUiState(
     val swimspotList: List<Swimspot> = emptyList<Swimspot>()// Swim Spot
@@ -41,13 +45,13 @@ data class WeatherUiState(
         precipitationNextHour = null
     ),
     val metAlerts: List<Alert> = emptyList(),
-    val weatherLocation: Point = Point.fromLngLat(10.7215, 59.9464)
+    val weatherLocation: Point = Point.fromLngLat(10.7215, 59.9464),
+    val lastWeatherLocationUpdate: Instant = Instant.now()
 )
 
 data class MapUiState @OptIn(MapboxExperimental::class) constructor(
     val mapViewportState: MapViewportState = MapViewportState(),
     val homeLocation: Point = Point.fromLngLat(10.7215, 59.9464),
-    val gpsLocationKnown: Boolean = false,
 )
 
 data class LocationUiState(
@@ -111,20 +115,38 @@ class HomeScreenViewModel(
         viewModelScope.launch {
             _weatherUiState.update {
                 it.copy(
-                    weatherLocation = point
+                    weatherLocation = point,
+                    lastWeatherLocationUpdate = Instant.now()
                 )
             }
         }
     }
 
+    private val updatingWeather = AtomicBoolean(false)
     fun updateWeather(point: Point = _weatherUiState.value.weatherLocation) {
         viewModelScope.launch {
+
+            if (updatingWeather.get()) {
+                return@launch
+            }
+            updatingWeather.set(true)
+
+            var lastUpdated = _weatherUiState.value.lastWeatherLocationUpdate
+            while (ChronoUnit.SECONDS.between(lastUpdated, Instant.now()) < 5) {
+                Log.d("HomeScreenViewModel", "Delaying weather update")
+                delay(2000)
+                lastUpdated = _weatherUiState.value.lastWeatherLocationUpdate
+            }
+
+            Log.d("HomeScreenViewModel", "Updating weather")
             _weatherUiState.update {
                 it.copy(
                     weather = getCurrentWeather(point.latitude(), point.longitude()),
                     metAlerts = getMetAlerts(point.latitude(), point.longitude())
                 )
             }
+
+            updatingWeather.set(false)
         }
     }
 

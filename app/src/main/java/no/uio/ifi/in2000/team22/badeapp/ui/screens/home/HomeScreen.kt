@@ -178,8 +178,8 @@ fun HomeScreen(
                 }, //correct UU?
                 mapEvents = MapEvents(
                     onCameraChanged = {
-                        Log.i("MAP", it.cameraState.zoom.toString())
-                        Log.i("MAP", it.cameraState.center.coordinates().toString())
+                        /*Log.i("MAP", it.cameraState.zoom.toString())
+                        Log.i("MAP", it.cameraState.center.coordinates().toString())*/
                         if (it.cameraState.zoom >= 9) {
                             showWeatherInfoButton = true
                             val results: FloatArray = floatArrayOf(0F)
@@ -190,8 +190,8 @@ fun HomeScreen(
                                 it.cameraState.center.longitude(),
                                 results
                             )
-                            if (results[0] > 20000) {
-                                Log.i("HomeScreen", "Getting new weather (>20km)")
+                            if (results[0] > 10000) {
+                                /* Log.i("HomeScreen", "Getting new weather (>20km)")*/
                                 homeScreenViewModel.updateWeatherLocation(
                                     Point.fromLngLat(
                                         it.cameraState.center.longitude(),
