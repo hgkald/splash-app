@@ -32,7 +32,7 @@ data class SwimspotUiState(
 data class WeatherUiState(
     val alerts: List<Alert> = listOf(),
     val weather: Weather? = null,
-    val water: WaterTemperature? = null
+    val water: WaterTemperature? = null,
 )
 
 class SwimspotViewModel(
