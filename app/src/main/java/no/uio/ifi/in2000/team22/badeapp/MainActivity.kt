@@ -67,7 +67,9 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("search") {
                             val searchViewModel: SearchScreenViewModel = viewModel(
-                                factory = SearchScreenViewModel.provideFactory(swimspotsRepository)
+                                factory = SearchScreenViewModel.provideFactory(
+                                    favoritesRepository,
+                                    swimspotsRepository)
                             )
                             SearchScreen(navController, searchViewModel)
                         }

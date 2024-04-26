@@ -29,10 +29,12 @@ class SearchScreenViewModel(
     init {
         viewModelScope.launch {
             launch {
-                _searchUiState.update {
-                    it.copy(
-                        favorites = favoritesRepository.observe()
-                    )
+                favoritesRepository.allFavorites.collect { favoritesList ->
+                    _searchUiState.update {
+                        it.copy(
+                            favorites = favoritesList
+                        )
+                    }
                 }
             }
             launch {

@@ -11,7 +11,7 @@ data class FavoritesState(
 
 class FavoritesRepository(private val favoritesDao: FavoritesDao) {
 
-    //val allFavorites: Flow<List<Favorite>> = favoritesDao.getAll()
+    val allFavorites: Flow<List<Favorite>> = favoritesDao.getAll()
 
     fun observe(): Flow<List<Favorite>> {
         return favoritesDao.getAll()
