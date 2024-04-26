@@ -1,15 +1,11 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites
 
-import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,19 +13,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import no.uio.ifi.in2000.team22.badeapp.MainActivity
+import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
+import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppTopAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.favorites.FavoriteButton
@@ -37,38 +29,47 @@ import no.uio.ifi.in2000.team22.badeapp.ui.components.favorites.FavoriteButton
 @Composable
 fun FavoritesScreen(
     navController: NavController,
-    //favoritesList: List<Swimspot>,
-    favViewModel : FavoritesScreenViewModel = viewModel()
+    viewModel : FavoritesViewModel,
+    swimspotsRepository: SwimspotsRepository
 ){
 
-    val state by favViewModel.favUiState.collectAsState()
+    val state by viewModel.favoritesUiState.collectAsState()
+    val favorites = state.favorites
+    val swimspots = state.swimspots
 
     Scaffold (
         topBar = { BadeAppTopAppBar() },
         bottomBar = { BadeAppBottomAppBar(navcontroller = navController) }
     ){ paddingValues ->
 
+
         LazyColumn (
             modifier = Modifier
                 .padding(paddingValues)
         ){
-            items(state.favList){
-                FavCard(
-                    swimspot = it,
-                    favoritesList = state.favList,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = 10.dp,
-                            top = 0.dp,
-                            end = 10.dp,
-                            bottom = 16.dp
-                        ),
-                    toggleFavorite = {
-                        favViewModel.toggleFavorite(it)
-                    },
-                    goToSwimspotScreen = {} //TODO
-                )
+            swimspots.filter { swimspot ->
+                favorites.contains(Favorite(swimspot.id))
+            }.forEach { swimspot ->
+                item {
+                    FavCard(
+                        swimspot = swimspot,
+                        favoritesList = favorites,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 10.dp,
+                                top = 0.dp,
+                                end = 10.dp,
+                                bottom = 16.dp
+                            ),
+                        onClickFavorite = {
+                            viewModel.delete(Favorite(swimspot.id))
+                        },
+                        onClick = {
+                            navController.navigate("swimspot/${swimspot.id}")
+                        }
+                    )
+                }
             }
         }
     }
@@ -78,14 +79,14 @@ fun FavoritesScreen(
 @Composable
 fun FavCard(
     swimspot: Swimspot,
-    favoritesList: List<Swimspot>,
-    toggleFavorite : () -> Unit,
-    goToSwimspotScreen : () -> Unit,
+    favoritesList: List<Favorite>,
+    onClickFavorite: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ){
     Card(
         modifier = modifier,
-        onClick = {goToSwimspotScreen()}
+        onClick = {onClick()}
     ) {
 
         Row (
@@ -105,7 +106,7 @@ fun FavCard(
                 FavoriteButton(
                     swimspot = swimspot,
                     favoritesList = favoritesList,
-                    toggleFavorite = toggleFavorite
+                    toggleFavorite = onClickFavorite
                 )
             }
 
@@ -140,39 +141,10 @@ fun FavCardInfo(swimspot: Swimspot){
     }
 }
 
-
-
-
-
-
-
-
-
+/*
 @Composable
 @Preview
 fun FavScreenPreview(){
     val navController : NavController = rememberNavController()
     //FavoritesScreen(navController = navController, this@MainActivity)
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}*/

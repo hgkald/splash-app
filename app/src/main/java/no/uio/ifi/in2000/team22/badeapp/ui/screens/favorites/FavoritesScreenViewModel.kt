@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites
 
+/*
 import android.util.Log
 import android.view.View
 import androidx.lifecycle.ViewModel
@@ -11,7 +12,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesListRepository
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
-
 data class FavUiState(
     val favList: List<Swimspot> = emptyList()
 )
@@ -56,4 +56,4 @@ class FavoritesScreenViewModel : ViewModel(){
         favoritesListRepository.removeFavorite(swimspot = swimspot)
     }
 
-}
+}*/

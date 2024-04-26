@@ -1,8 +1,8 @@
 package no.uio.ifi.in2000.team22.badeapp.data.favorites
 
+/*
 import android.util.Log
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
-
 class FavoritesListRepository{
     //private val favList = mutableListOf<Swimspot>()
     private val favList = mutableListOf(
@@ -28,4 +28,4 @@ class FavoritesListRepository{
         return favList.toMutableList()
     }
 
-}
+}*/

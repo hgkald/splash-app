@@ -1,8 +1,5 @@
 package no.uio.ifi.in2000.team22.badeapp
 
-import android.Manifest
-import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,15 +13,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesRepository
 import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
-import no.uio.ifi.in2000.team22.badeapp.data.SwimspotDataSource
-import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesListRepository
-import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
+import no.uio.ifi.in2000.team22.badeapp.persistence.FavoritesDatabase
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreen
-import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreenViewModel
+import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesViewModel
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreenViewModel
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.search.SearchScreen
@@ -35,12 +28,16 @@ import no.uio.ifi.in2000.team22.badeapp.ui.theme.BadeappTheme
 
 class MainActivity : ComponentActivity() {
     private lateinit var swimspotsRepository: SwimspotsRepository
+    private lateinit var favoritesRepository: FavoritesRepository
+    private lateinit var favoritesDatabase: FavoritesDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
         swimspotsRepository = SwimspotsRepository(applicationContext)
+        favoritesDatabase = FavoritesDatabase.getDatabase(applicationContext)
+        favoritesRepository = FavoritesRepository(favoritesDatabase.favoritesDao())
 
         setContent {
             BadeappTheme {
@@ -59,7 +56,15 @@ class MainActivity : ComponentActivity() {
                             )
                             HomeScreen(navController, homeViewModel)
                         }
-                        composable("favorites") { FavoritesScreen(navController) }
+                        composable("favorites") {
+                            val favoritesViewModel: FavoritesViewModel = viewModel(
+                                factory = FavoritesViewModel.provideFactory(
+                                    favoritesRepository,
+                                    swimspotsRepository
+                                )
+                            )
+                            FavoritesScreen(navController, favoritesViewModel, swimspotsRepository)
+                        }
                         composable("search") {
                             val searchViewModel: SearchScreenViewModel = viewModel(
                                 factory = SearchScreenViewModel.provideFactory(swimspotsRepository)
