@@ -20,13 +20,13 @@ import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 @Composable
 fun FavoriteButton(
     swimspot: Swimspot,
-    favoritesList: List<Favorite>,
+    favoritesList: List<Swimspot?>,
     modifier: Modifier = Modifier,
     toggleFavorite: () -> Unit,
 ){
     if (favoritesList.isEmpty()){
         FavoriteButtonOutlined(onClick = toggleFavorite, modifier = modifier)
-    } else if (favoritesList.contains(Favorite(swimspot.id))){
+    } else if (favoritesList.contains(swimspot)){
         FavoriteButtonFilled(onClick = toggleFavorite, modifier = modifier)
     } else {
         FavoriteButtonOutlined(onClick = toggleFavorite, modifier = modifier)

@@ -35,7 +35,7 @@ fun FavoritesScreen(
 
     val state by viewModel.favoritesUiState.collectAsState()
     val favorites = state.favorites
-    val swimspots = state.swimspots
+    //val swimspots = state.swimspots
 
     Scaffold (
         topBar = { BadeAppTopAppBar() },
@@ -47,28 +47,31 @@ fun FavoritesScreen(
             modifier = Modifier
                 .padding(paddingValues)
         ){
-            swimspots.filter { swimspot ->
-                favorites.contains(Favorite(swimspot.id))
-            }.forEach { swimspot ->
+            //swimspots.filter { swimspot ->
+            //    favorites.contains(Favorite(swimspot.id))
+            //}
+            favorites.forEach { swimspot ->
                 item {
-                    FavCard(
-                        swimspot = swimspot,
-                        favoritesList = favorites,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 10.dp,
-                                top = 0.dp,
-                                end = 10.dp,
-                                bottom = 16.dp
-                            ),
-                        onClickFavorite = {
-                            viewModel.delete(Favorite(swimspot.id))
-                        },
-                        onClick = {
-                            navController.navigate("swimspot/${swimspot.id}")
-                        }
-                    )
+                    if (swimspot != null) {
+                        FavCard(
+                            swimspot = swimspot,
+                            favoritesList = favorites,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    start = 10.dp,
+                                    top = 0.dp,
+                                    end = 10.dp,
+                                    bottom = 16.dp
+                                ),
+                            onClickFavorite = {
+                                viewModel.delete(Favorite(swimspot.id))
+                            },
+                            onClick = {
+                                navController.navigate("swimspot/${swimspot.id}")
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -79,7 +82,7 @@ fun FavoritesScreen(
 @Composable
 fun FavCard(
     swimspot: Swimspot,
-    favoritesList: List<Favorite>,
+    favoritesList: List<Swimspot?>,
     onClickFavorite: () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
