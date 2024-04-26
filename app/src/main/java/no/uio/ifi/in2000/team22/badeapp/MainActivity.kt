@@ -9,13 +9,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import no.uio.ifi.in2000.team22.badeapp.data.location.UserLocationRepository
 import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreen
@@ -28,12 +26,15 @@ import no.uio.ifi.in2000.team22.badeapp.ui.theme.BadeappTheme
 
 class MainActivity : ComponentActivity() {
     private lateinit var swimspotsRepository: SwimspotsRepository
+    private lateinit var locationRepository: UserLocationRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
         swimspotsRepository = SwimspotsRepository(applicationContext)
+        locationRepository = UserLocationRepository(applicationContext)
+        locationRepository.startLocationUpdates()
 
         setContent {
             BadeappTheme {
@@ -48,7 +49,10 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             val homeViewModel: HomeScreenViewModel = viewModel(
                                 factory =
-                                HomeScreenViewModel.provideFactory(swimspotsRepository)
+                                HomeScreenViewModel.provideFactory(
+                                    swimspotsRepository,
+                                    locationRepository
+                                )
                             )
                             HomeScreen(navController, homeViewModel)
                         }
@@ -70,5 +74,15 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        locationRepository.startLocationUpdates()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        locationRepository.stopLocationUpdates()
     }
 }
