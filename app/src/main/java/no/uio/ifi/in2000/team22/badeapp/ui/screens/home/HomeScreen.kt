@@ -4,7 +4,6 @@ package no.uio.ifi.in2000.team22.badeapp.ui.screens.home
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.location.Location
 import android.location.Location.distanceBetween
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -27,22 +26,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationToken
-import com.google.android.gms.tasks.CancellationTokenSource
-import com.google.android.gms.tasks.OnTokenCanceledListener
+import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.mapbox.api.geocoding.v5.GeocodingCriteria
 import com.mapbox.api.geocoding.v5.MapboxGeocoding
 import com.mapbox.api.geocoding.v5.models.GeocodingResponse
-import com.google.gson.Gson
-import com.google.gson.JsonElement
 import com.mapbox.geojson.Point
 import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapboxExperimental
@@ -67,8 +59,8 @@ import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppTopAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.mapElements.PanToHomeButton
 import no.uio.ifi.in2000.team22.badeapp.ui.components.mapElements.PanToLocationButton
-import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.WeatherDialog
 import no.uio.ifi.in2000.team22.badeapp.ui.components.mapElements.WeatherInfoButton
+import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.WeatherDialog
 import no.uio.ifi.in2000.team22.badeapp.ui.permissions.LocationPermissionDialog
 import retrofit2.Call
 import retrofit2.Callback
@@ -84,7 +76,6 @@ fun HomeScreen(
 ) {
     var showWeatherDialog by remember { mutableStateOf(false) }
     var showWeatherInfoButton by remember { mutableStateOf(true) }
-    var userGpsLocation by remember { mutableStateOf<Point?>(null) }
     var weatherLocationName by remember { mutableStateOf<String?>(null) }
 
     var showLocationPermissionDialog by remember { mutableStateOf(false) }
@@ -92,42 +83,7 @@ fun HomeScreen(
     val swimSpotUiState = homeScreenViewModel.swimSpotUiState.collectAsState()
     val weatherUiState = homeScreenViewModel.weatherUiState.collectAsState()
     val mapUiState = homeScreenViewModel.mapUiState.collectAsState()
-
-    //TODO: Should be moved to the viewmodel
-    val fusedLocationClient: FusedLocationProviderClient =
-        LocationServices.getFusedLocationProviderClient(LocalContext.current)
-
-    //TODO: Should be moved to the viewmodel
-    fun saveLastKnownLocation() {
-        try {
-            fusedLocationClient.getCurrentLocation(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                object : CancellationToken() {
-                    override fun onCanceledRequested(p0: OnTokenCanceledListener) =
-                        CancellationTokenSource().token
-
-                    override fun isCancellationRequested() = false
-                })
-                .addOnSuccessListener { location: Location? ->
-                    if (location != null) {
-                        userGpsLocation = Point.fromLngLat(location.longitude, location.latitude)
-                        homeScreenViewModel.isGpsLocationKnown(true)
-                        Log.i(
-                            "HomeScreen",
-                            "savelastKnownLocation(): ${userGpsLocation!!.longitude()} ${userGpsLocation!!.latitude()}"
-                        )
-                    } else {
-                        Log.i("HomeScreen", "savelastKnownLocation(): Could not get location")
-                        userGpsLocation = null
-                        homeScreenViewModel.isGpsLocationKnown(false)
-                    }
-                }
-        } catch (e: SecurityException) {
-            Log.w("HomeScreen", "Cannot get last location: Inadequate permissions")
-            Log.w("HomeScreen", e.message.toString())
-            Log.w("HomeScreen", e.stackTrace.toString())
-        }
-    }
+    val locationUiState = homeScreenViewModel.locationUiState.collectAsState()
 
     val locationPermissionsState = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -136,9 +92,10 @@ fun HomeScreen(
         ),
         onPermissionsResult = { results: Map<String, Boolean> ->
             if (results[android.Manifest.permission.ACCESS_FINE_LOCATION] == true) {
-                saveLastKnownLocation()
+                homeScreenViewModel.updateLocationPermissions()
+                Log.d("test", locationUiState.value.locationPermissions.toString())
             } else if (results[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
-                saveLastKnownLocation()
+                homeScreenViewModel.updateLocationPermissions()
             }
         }
     )
@@ -168,10 +125,20 @@ fun HomeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
+                val lastKnownLocation = locationUiState.value.lastKnownLocation
+                val userGpsLocation = if (lastKnownLocation != null) {
+                    Point.fromLngLat(
+                        lastKnownLocation.longitude,
+                        lastKnownLocation.latitude
+                    )
+                } else {
+                    null
+                }
+
                 PanToLocationButton(
                     point = userGpsLocation,
                     onClick = {
-                        if (mapUiState.value.gpsLocationKnown) {
+                        if (locationUiState.value.locationPermissions) {
                             mapViewportState.easeTo(
                                 cameraOptions = cameraOptions {
                                     center(userGpsLocation)
@@ -211,8 +178,8 @@ fun HomeScreen(
                 }, //correct UU?
                 mapEvents = MapEvents(
                     onCameraChanged = {
-                        Log.i("MAP", it.cameraState.zoom.toString())
-                        Log.i("MAP", it.cameraState.center.coordinates().toString())
+                        /*Log.i("MAP", it.cameraState.zoom.toString())
+                        Log.i("MAP", it.cameraState.center.coordinates().toString())*/
                         if (it.cameraState.zoom >= 9) {
                             showWeatherInfoButton = true
                             val results: FloatArray = floatArrayOf(0F)
@@ -223,8 +190,8 @@ fun HomeScreen(
                                 it.cameraState.center.longitude(),
                                 results
                             )
-                            if (results[0] > 20000) {
-                                Log.i("HomeScreen", "Getting new weather (>20km)")
+                            if (results[0] > 10000) {
+                                /* Log.i("HomeScreen", "Getting new weather (>20km)")*/
                                 homeScreenViewModel.updateWeatherLocation(
                                     Point.fromLngLat(
                                         it.cameraState.center.longitude(),
@@ -233,8 +200,7 @@ fun HomeScreen(
                                 )
                                 homeScreenViewModel.updateWeather()
                             }
-                        }
-                        else {
+                        } else {
                             showWeatherInfoButton = false
                         }
                     },
@@ -326,7 +292,8 @@ fun HomeScreen(
                             weatherLocationName = results[0].text()
                             Log.d("HomeScreen", "onResponse: ${results[0].text()}")
                         } else if (mapViewportState.cameraState.zoom >= 8) {
-                            weatherLocationName = results[0].text() //getKommuneName(results[0].placeName())
+                            weatherLocationName =
+                                results[0].text() //getKommuneName(results[0].placeName())
                             Log.d("HomeScreen", "onResponse: ${results[0].placeName()}")
                         } else {
                             weatherLocationName = null
@@ -356,7 +323,7 @@ fun HomeScreen(
         }
 
         if (locationPermissionsState.permissions[0].status.isGranted) {
-            saveLastKnownLocation()
+            homeScreenViewModel.updateLocationPermissions()
         }
         if (showLocationPermissionDialog) {
             Log.d("HomeScreen", locationPermissionsState.permissions[1].status.toString())
