@@ -6,6 +6,8 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
+import io.ktor.client.statement.request
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import io.ktor.serialization.gson.gson
@@ -96,10 +98,12 @@ class FrostDataSource {
         lon: Double,
         maxDist: Double,
         maxCount: Double,
-        withObservations: Boolean
+        withObservations: Boolean,
+        from: Instant,
+        to: Instant
     ): FrostData? {
         return try {
-            Log.i("FrostDataSource", "Fetching information from FrostAPI")
+            Log.i("FrostDataSource", "Fetching data from API")
             val response = client.get {
                 url {
                     parameters.append("incobs", withObservations.toString())
@@ -107,9 +111,18 @@ class FrostDataSource {
                         "nearest",
                         """{"maxdist":$maxDist,"maxcount":$maxCount,"points":[{"lon":$lon,"lat":$lat}]}"""
                     )
-                    parameters.append("time", "2023-05-01T00:00:00Z/2023-08-02T23:59:59Z")
+                    parameters.append("time", "$from/$to")
                 }
             }
+
+            if (response.status == HttpStatusCode.NotFound) {
+                Log.e(
+                    "FrostDataSource",
+                    "404 Not Found on request parameters = ${response.request.url.parameters}"
+                )
+                return null
+            }
+
             response.body<FrostData>()
         } catch (e: Exception) {
             Log.e("FrostDataSource", e.message.toString())
@@ -128,9 +141,22 @@ class FrostDataSource {
      * @return A list of [WaterTemperature] which contains temperature and time. Or if no observations
      * where found, an [emptyList] is returned.
      */
-    suspend fun fetchWaterTemperature(lat: Double, lon: Double): List<WaterTemperature> {
+    suspend fun fetchWaterTemperature(
+        lat: Double,
+        lon: Double,
+        from: Instant,
+        to: Instant
+    ): List<WaterTemperature> {
         val data =
-            fetch(lat = lat, lon = lon, maxDist = 2.0, maxCount = 1.0, withObservations = true)
+            fetch(
+                lat = lat,
+                lon = lon,
+                maxDist = 2.0,
+                maxCount = 5.0,
+                withObservations = true,
+                from = from,
+                to = to
+            )
 
         return try {
             data?.data?.tseries?.map {
