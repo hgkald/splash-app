@@ -29,17 +29,19 @@ import no.uio.ifi.in2000.team22.badeapp.ui.theme.BadeappTheme
 
 class MainActivity : ComponentActivity() {
     private lateinit var swimspotsRepository: SwimspotsRepository
+    private lateinit var locationRepository: UserLocationRepository
     private lateinit var favoritesRepository: FavoritesRepository
     private lateinit var favoritesDatabase: FavoritesDatabase
-    private lateinit var locationRepository: UserLocationRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
         swimspotsRepository = SwimspotsRepository(applicationContext)
+
         favoritesDatabase = FavoritesDatabase.getDatabase(applicationContext)
         favoritesRepository = FavoritesRepository(favoritesDatabase.favoritesDao())
+
         locationRepository = UserLocationRepository(applicationContext)
         locationRepository.startLocationUpdates()
 
