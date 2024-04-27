@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.filled.Place
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,16 +28,14 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconToggleButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -52,18 +53,17 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
+import kotlin.math.roundToInt
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
@@ -71,41 +71,46 @@ import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 fun SearchScreen(
     navcontroller: NavController,
     searchScreenViewModel: SearchScreenViewModel
-    ) {
+) {
     var input by remember { mutableStateOf("") }
     val keyboard = LocalSoftwareKeyboardController.current
-    var seAlleKnapp by remember { mutableStateOf(true) }
-    val (visForslag, settForslag) =  remember { mutableStateOf(true) }
+    var seeAllButton by remember { mutableStateOf(true) }
+    val (showSuggestions, settSuggestions) = remember { mutableStateOf(true) }
     val scrollState: LazyListState = rememberLazyListState()
 
     val searchUiState by searchScreenViewModel.searchUiState.collectAsState()
+    val locationUiState = searchScreenViewModel.locationUiState.collectAsState()
+
     val favorites = searchUiState.favorites
     val swimspots = searchUiState.swimspots
 
     keyboard?.show()
 
-    /* Oppsett side */
+    /* Main search page */
     Scaffold(
         topBar = { Text(text = "") },
         bottomBar = { BadeAppBottomAppBar(navcontroller) },
         floatingActionButton = {
-            val visKnapp by remember {
-                derivedStateOf { scrollState.firstVisibleItemIndex > 0  }
+            val showButton by remember {
+                derivedStateOf { scrollState.firstVisibleItemIndex > 0 }
             }
-            AnimatedVisibility(visible = visKnapp, enter = fadeIn(), exit = fadeOut() ) {
+            AnimatedVisibility(visible = showButton, enter = fadeIn(), exit = fadeOut()) {
                 val c = rememberCoroutineScope()
-                FloatingActionButton(onClick = { c.launch {
-                    scrollState.animateScrollToItem(index = 0)
-                } },)
+                FloatingActionButton(
+                    onClick = {
+                        c.launch {
+                            scrollState.animateScrollToItem(index = 0)
+                        }
+                    },
+                )
 
-                { Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Bla helt opp")}
+                { Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Bla helt opp") }
             }
         }
 
-        )
+    )
     {
-        /* SØKEFUNKSJON */
-
+        /* Search functionality */
         LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -122,15 +127,19 @@ fun SearchScreen(
                         .padding(start = 13.dp, end = 13.dp),
                     value = input,
                     shape = CircleShape,
-                    onValueChange = { input = it
-                        settForslag(input.isEmpty())},
+                    onValueChange = {
+                        input = it
+                        settSuggestions(input.isEmpty())
+                    },
 
                     label = { Text("Søk her") },
                     leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Søk") },
                     trailingIcon = {
                         if (input != "")
-                            IconButton(onClick = { input = ""
-                            settForslag(true)}
+                            IconButton(onClick = {
+                                input = ""
+                                settSuggestions(true)
+                            }
                             ) {
                                 Icon(Icons.Filled.Close, contentDescription = "Ta bort søk")
                             }
@@ -151,73 +160,105 @@ fun SearchScreen(
             item {
                 val (knapp, knapp2) = remember { mutableStateOf("Se alle") }
 
-                Row(modifier = Modifier.fillMaxWidth(),
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Absolute.Left) {
+                    horizontalArrangement = Arrangement.Absolute.Left
+                ) {
 
-                    if(input == "") {
-                        Text(text = "Forslag",
+                    if (input == "") {
+                        Text(
+                            text = "Forslag",
                             modifier = Modifier.padding(start = 5.dp, end = 200.dp),
-                            fontSize = 23.sp)
+                            fontSize = 23.sp
+                        )
                     } else {
                         Text(text = "", modifier = Modifier.padding(start = 5.dp, end = 280.dp))
 
                     }
 
                     TextButton(onClick = {
-                        if(knapp == "Se alle") { // når du går fra forslag side til se alle side
+                        if (knapp == "Se alle") { // når du går fra forslag side til se alle side
                             knapp2("Tilbake")
-                            seAlleKnapp = false
-                            settForslag(false)
+                            seeAllButton = false
+                            settSuggestions(false)
                             input = ""
                             keyboard?.hide()
-                        }
-
-                        else { //Nå du går fra Se alle til forslag siden
+                        } else { //Nå du går fra Se alle til forslag siden
                             knapp2("Se alle")
-                            seAlleKnapp = true
-                            settForslag(true)
+                            seeAllButton = true
+                            settSuggestions(true)
                             input = ""
                         }
                     })
-                    { Text(
-                        text = knapp,
-                        textAlign = TextAlign.Center,
-                        textDecoration = TextDecoration.Underline
-                    )
+                    {
+                        Text(
+                            text = knapp,
+                            textAlign = TextAlign.Center,
+                            textDecoration = TextDecoration.Underline
+                        )
                     }
                 }
             }
+            val location = locationUiState.value.lastKnownLocation
+
+            if (location != null) {
+                searchScreenViewModel.updateSuggestions(
+                    location.latitude,
+                    location.longitude
+                )
+            }
+
             item {
                 Spacer(modifier = Modifier.height(10.dp))
-                swimspots.forEach {
-                    var isFavorite = favorites.contains(Favorite(it.id))
-                    val toggleFavorite =
-                        if (favorites.isEmpty() || !isFavorite) {
-                            {
-                                searchScreenViewModel.addFavorite(Favorite(it.id))
-                                isFavorite = !isFavorite
-                            }
+            }
+            item {
+                if (input == "") {
+                    if (showSuggestions) {
+                        val spots = if (searchUiState.nearestSwimspots.size > 5) {
+                            searchUiState.nearestSwimspots.subList(0, 4)
+                        } else {
+                            searchUiState.nearestSwimspots
                         }
-                        else {
-                            {
-                                searchScreenViewModel.removeFavorite(Favorite(it.id))
-                                isFavorite = !isFavorite
+                        ShowFiveSuggestions(
+                            navcontroller,
+                            spots
+                        )
+                    }
+                } else {
+                    swimspots.forEach {
+                        var isFavorite = favorites.contains(Favorite(it.id))
+                        val toggleFavorite =
+                            if (favorites.isEmpty() || !isFavorite) {
+                                {
+                                    searchScreenViewModel.addFavorite(Favorite(it.id))
+                                    isFavorite = !isFavorite
+                                }
+                            } else {
+                                {
+                                    searchScreenViewModel.removeFavorite(Favorite(it.id))
+                                    isFavorite = !isFavorite
+                                }
                             }
-                        }
-                    val onClick: () -> Unit = { toggleFavorite() }
+                        val onFavoriteClick: () -> Unit = { toggleFavorite() }
 
-                    if (it.name.startsWith(input, ignoreCase = true) && input != "") {
-                        Kort(navcontroller, it, isFavorite, onClick)
-                    } else if (!seAlleKnapp && input == "") {
-                        Kort(navcontroller, it, isFavorite, onClick)
+                        if (it.name.startsWith(input, ignoreCase = true) && input != "") {
+                            ResultCard(
+                                navcontroller = navcontroller,
+                                swimspot = it,
+                                isFavorite = isFavorite,
+                                onFavoriteClick = onFavoriteClick
+                            )
+                        } else if (!seeAllButton && input == "") {
+                            ResultCard(
+                                navcontroller = navcontroller,
+                                swimspot = it,
+                                isFavorite = isFavorite,
+                                onFavoriteClick = onFavoriteClick
+                            )
+                        }
                     }
                 }
-
-                if (visForslag) {
-                    VisFemForslag(navcontroller, searchUiState.swimspots)
-                }
-
             }
         }
     }
@@ -225,7 +266,7 @@ fun SearchScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavorittKnapp(color: Color = Color.Red, isFavorite: Boolean, onClick: () -> Unit) {
+fun FavoriteButton(color: Color = Color.Red, isFavorite: Boolean, onClick: () -> Unit) {
     Box(contentAlignment = Alignment.TopEnd, modifier = Modifier.fillMaxSize()) {
         Card(onClick = onClick) {
             Icon(
@@ -242,26 +283,57 @@ fun FavorittKnapp(color: Color = Color.Red, isFavorite: Boolean, onClick: () -> 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Kort(navcontroller: NavController, it: Swimspot, isFavorite: Boolean, onClick: () -> Unit){
+fun ResultCard(
+    navcontroller: NavController,
+    swimspot: Swimspot,
+    distance: Float = 0f,
+    isFavorite: Boolean? = null,
+    onFavoriteClick: (() -> Unit)? = null
+){
     Card(
         modifier = Modifier
-            .size(width = 500.dp, height = 100.dp),
-        onClick = { navcontroller.navigate("swimspot/${it.id}") },
-        border = BorderStroke(2.dp, Color.LightGray)
-    )
-    {
-        Box(contentAlignment = Alignment.TopCenter) {
-            Text(
-                text = it.name,
-                fontWeight = FontWeight.Medium,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.align(Alignment.Center)
-            )
-            FavorittKnapp(Color.Red, isFavorite, onClick)
+            .fillMaxWidth()
+            .padding(5.dp),
+        onClick = { navcontroller.navigate("swimspot/${swimspot.id}") },
+        border = BorderStroke(2.dp, Color.LightGray),
+        colors = CardDefaults.cardColors()
+    ) {
+        Row(
+            modifier = Modifier.padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = swimspot.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                )
+                if (distance.toInt() != 0) {
+                    Text(
+                        text = "Avstand: ${(distance / 1000).roundToInt()}km",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                    )
+                }
+            }
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (isFavorite != null && onFavoriteClick != null) {
+                    FavoriteButton(Color.Red, isFavorite, onFavoriteClick)
+                }
+                else {
+                    Icon(
+                        Icons.Filled.Place,
+                        contentDescription = "Pil",
+                        modifier = Modifier.align(
+                            Alignment.TopEnd
+                        )
+                    )
+                }
+            }
         }
     }
-    Spacer(modifier = Modifier.height(13.dp))
 }
 
 
@@ -269,54 +341,21 @@ fun Kort(navcontroller: NavController, it: Swimspot, isFavorite: Boolean, onClic
 fun hentFemForslag(swimspots: List<Swimspot>): MutableList<Swimspot> {
     val newList = mutableListOf<Swimspot>()
 
-    for (i in 1..5){
+    for (i in 1..5) {
         newList.add(swimspots.random())
     }
     return newList
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VisFemForslag(navcontroller: NavController, swimspots: List<Swimspot>) {
-    val x = hentFemForslag(swimspots)
-
-    x.forEach {
+fun ShowFiveSuggestions(navcontroller: NavController, swimspots: List<Pair<Swimspot, Float>>) {
+    swimspots.forEach {
         Row(horizontalArrangement = Arrangement.SpaceBetween) {
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Absolute.Right
             ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 20.dp),
-                    onClick = { navcontroller.navigate("swimspot/${it.id}") },
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = it.name,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Black,
-                            color = Color.Black,
-                            modifier = Modifier.padding(start = 5.dp, end = 5.dp)
-                        )
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            Icon(
-                                Icons.Filled.Place,
-                                contentDescription = "Pil",
-                                modifier = Modifier.align(
-                                    Alignment.TopEnd
-                                )
-                            )
-                        }
-
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Divider()
-                }
-
+                ResultCard(navcontroller = navcontroller, swimspot = it.first, distance = it.second)
             }
         }
     }

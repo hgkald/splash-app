@@ -1,6 +1,8 @@
 package no.uio.ifi.in2000.team22.badeapp.data.swimspots
 
 import android.content.Context
+import android.location.Location
+import android.util.Log
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 
 class SwimspotsRepository(private val context: Context) {
@@ -33,5 +35,42 @@ class SwimspotsRepository(private val context: Context) {
         } catch (e: Exception) {
             null
         }
+    }
+
+    /**
+     * Sort swimspots after distance to a given point, and return the x nearest swimspots
+     *
+     * @param latitude
+     * @param longitude
+     * @param limit the max amount if swimspots returned, default is size of [swimspots]
+     */
+    fun getNearestSwimspots(
+        latitude: Double,
+        longitude: Double,
+        limit: Int = swimspots.size
+    ): List<Pair<Swimspot, Float>> {
+        val swimspotsSorted = try {
+            swimspots
+                .map {
+                    val results: FloatArray = floatArrayOf(0F)
+                    Location.distanceBetween(latitude, longitude, it.lat, it.lon, results)
+
+                    val distance = results.first()
+                    Pair(it, distance)
+                }.sortedBy {
+                    it.second
+                }.subList(0, limit - 1)
+        } catch (e: Exception) {
+            swimspots
+                .map {
+                    Pair(it, 0f)
+                }
+                .subList(0, limit - 1)
+
+        }
+
+        Log.d("SwimspotsRepo", "Returning list of nearest swimspots: ${swimspotsSorted.size}")
+
+        return swimspotsSorted
     }
 }

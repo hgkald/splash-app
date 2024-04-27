@@ -9,11 +9,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
+import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesRepository
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.lifecycle.viewmodel.compose.viewModel
-import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesRepository
+import no.uio.ifi.in2000.team22.badeapp.data.location.UserLocationRepository
 import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
 import no.uio.ifi.in2000.team22.badeapp.persistence.FavoritesDatabase
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreen
@@ -30,6 +31,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var swimspotsRepository: SwimspotsRepository
     private lateinit var favoritesRepository: FavoritesRepository
     private lateinit var favoritesDatabase: FavoritesDatabase
+    private lateinit var locationRepository: UserLocationRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -38,6 +40,8 @@ class MainActivity : ComponentActivity() {
         swimspotsRepository = SwimspotsRepository(applicationContext)
         favoritesDatabase = FavoritesDatabase.getDatabase(applicationContext)
         favoritesRepository = FavoritesRepository(favoritesDatabase.favoritesDao())
+        locationRepository = UserLocationRepository(applicationContext)
+        locationRepository.startLocationUpdates()
 
         setContent {
             BadeappTheme {
@@ -52,7 +56,10 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             val homeViewModel: HomeScreenViewModel = viewModel(
                                 factory =
-                                HomeScreenViewModel.provideFactory(swimspotsRepository)
+                                HomeScreenViewModel.provideFactory(
+                                    swimspotsRepository,
+                                    locationRepository
+                                )
                             )
                             HomeScreen(navController, homeViewModel)
                         }
@@ -68,8 +75,10 @@ class MainActivity : ComponentActivity() {
                         composable("search") {
                             val searchViewModel: SearchScreenViewModel = viewModel(
                                 factory = SearchScreenViewModel.provideFactory(
+                                    swimspotsRepository,
                                     favoritesRepository,
-                                    swimspotsRepository)
+                                    locationRepository
+                                )
                             )
                             SearchScreen(navController, searchViewModel)
                         }
@@ -84,5 +93,15 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        locationRepository.startLocationUpdates()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        locationRepository.stopLocationUpdates()
     }
 }
