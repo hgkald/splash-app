@@ -297,8 +297,7 @@ fun InfoCardImage(
                 Image(
                     painter = painterResource(id = id),
                     contentDescription = contentDescription,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.padding(top = 10.dp)
+                    contentScale = ContentScale.Inside,
                 )
             }
             Box(modifier = modifier.weight(0.25f)) {
