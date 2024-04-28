@@ -48,24 +48,29 @@ class SwimspotsRepository(private val context: Context) {
         latitude: Double,
         longitude: Double,
         limit: Int = swimspots.size
-    ): List<Pair<Swimspot, Float>> {
+    ): List<Swimspot> {
+        Log.d("SwimspotsRepo", "beep getting nearest swimSpots")
+
         val swimspotsSorted = try {
             swimspots
                 .map {
                     val results: FloatArray = floatArrayOf(0F)
                     Location.distanceBetween(latitude, longitude, it.lat, it.lon, results)
 
-                    val distance = results.first()
-                    Pair(it, distance)
-                }.sortedBy {
-                    it.second
+                    it.distance = results.first()
+                    it
+                    //Pair(it, distance)
+                }
+                .sortedBy {
+                    it.distance
                 }.subList(0, limit - 1)
         } catch (e: Exception) {
+            Log.d("SwimspotsRepo", "Exception at getNearestSwimspots()")
             swimspots
-                .map {
+                /*.map {
                     Pair(it, 0f)
                 }
-                .subList(0, limit - 1)
+                .subList(0, limit - 1)*/
 
         }
 

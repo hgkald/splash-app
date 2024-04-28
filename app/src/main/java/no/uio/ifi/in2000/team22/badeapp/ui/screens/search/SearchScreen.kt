@@ -1,6 +1,7 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.screens.search
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,9 +17,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -31,7 +32,10 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,8 +43,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -54,10 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
@@ -72,23 +73,74 @@ fun SearchScreen(
     navcontroller: NavController,
     searchScreenViewModel: SearchScreenViewModel
 ) {
-    var input by remember { mutableStateOf("") }
+    //var input by remember { mutableStateOf("") }
     val keyboard = LocalSoftwareKeyboardController.current
-    var seeAllButton by remember { mutableStateOf(true) }
-    val (showSuggestions, settSuggestions) = remember { mutableStateOf(true) }
+    //var seeAllButton by remember { mutableStateOf(true) }
+    //var showSuggestions by remember { mutableStateOf(true) }
     val scrollState: LazyListState = rememberLazyListState()
 
     val searchUiState by searchScreenViewModel.searchUiState.collectAsState()
     val locationUiState = searchScreenViewModel.locationUiState.collectAsState()
 
-    val favorites = searchUiState.favorites
     val swimspots = searchUiState.swimspots
+    val filteredSwimspots by searchScreenViewModel.filteredSwimspots.collectAsState()
+    val nearestSwimspots = searchUiState.nearestSwimspots
+
+    val favorites = searchUiState.favorites
+    val input = searchUiState.searchInput
 
     keyboard?.show()
 
+    val visibleSwimspots =
+        if (input == "" && nearestSwimspots.isNotEmpty()) {
+            nearestSwimspots
+        } else if (input.length > 1){
+            filteredSwimspots
+        }
+        else {
+            swimspots
+        }
+
+    val location = locationUiState.value.lastKnownLocation
+    LaunchedEffect(location) {
+        if (location != null) {
+            searchScreenViewModel.updateNearestSwimspots(location.latitude, location.longitude)
+        }
+    }
+
     /* Main search page */
     Scaffold(
-        topBar = { Text(text = "") },
+        topBar = {
+            //Search bar
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                value = input,
+                shape = CircleShape,
+                onValueChange = {
+                    searchScreenViewModel.setInput(it)
+                    //showSuggestions = input.isEmpty()
+                },
+                label = { Text("Søk her") },
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Søk") },
+                trailingIcon = {
+                    if (input != "")
+                        IconButton(onClick = {
+                            searchScreenViewModel.setInput("")
+                            //showSuggestions = true
+                        }) {
+                            Icon(Icons.Filled.Close, contentDescription = "Ta bort søk")
+                        }
+                },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        keyboard?.hide()
+                    }
+                )
+            )
+        },
         bottomBar = { BadeAppBottomAppBar(navcontroller) },
         floatingActionButton = {
             val showButton by remember {
@@ -102,92 +154,88 @@ fun SearchScreen(
                             scrollState.animateScrollToItem(index = 0)
                         }
                     },
-                )
-
-                { Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Bla helt opp") }
+                ) {
+                    Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Bla helt opp")
+                }
             }
         }
 
     )
     {
-        /* Search functionality */
         LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(28.dp)
-                .size(55.dp),
-            state = scrollState
-        )
-        {
+                .padding(it)
+        ) {
             item {
-                OutlinedTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 13.dp, end = 13.dp),
-                    value = input,
-                    shape = CircleShape,
-                    onValueChange = {
-                        input = it
-                        settSuggestions(input.isEmpty())
-                    },
-
-                    label = { Text("Søk her") },
-                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Søk") },
-                    trailingIcon = {
-                        if (input != "")
-                            IconButton(onClick = {
-                                input = ""
-                                settSuggestions(true)
-                            }
-                            ) {
-                                Icon(Icons.Filled.Close, contentDescription = "Ta bort søk")
-                            }
-
-                    },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            keyboard?.hide()
-                        }
-                    )
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-
-
-            /* HER ER SØK + HJERTE*/
-            item {
-                val (knapp, knapp2) = remember { mutableStateOf("Se alle") }
+                //val (knapp, knapp2) = remember { mutableStateOf("Se alle") }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Absolute.Left
+                    horizontalArrangement = Arrangement.SpaceAround
                 ) {
 
-                    if (input == "") {
-                        Text(
-                            text = "Forslag",
-                            modifier = Modifier.padding(start = 5.dp, end = 200.dp),
-                            fontSize = 23.sp
-                        )
+                    val header = if (input == "") {
+                        if (locationUiState.value.lastKnownLocation != null) {
+                            "Badeplasser nærmest deg"
+                        } else {
+                            "Utforsk badeplasser"
+                        }
                     } else {
-                        Text(text = "", modifier = Modifier.padding(start = 5.dp, end = 280.dp))
-
+                        ""
                     }
+                    Text(
+                        text = "Utforsk badeplasser",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
 
-                    TextButton(onClick = {
+                    /*
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text (
+                            style = MaterialTheme.typography.bodySmall,
+                            text = "Sortering"
+                        )
+                        var expanded by remember { mutableStateOf(false) }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Avstand") },
+                                onClick = { /* */ },
+                                )
+                            DropdownMenuItem(
+                                text = { Text("Navn") },
+                                onClick = { /* Handle settings! */ },
+                                )
+                        }
+                        FilledTonalButton(
+                            onClick = { /*TODO*/ },
+                        ) {
+                            Text(
+                                style = MaterialTheme.typography.bodySmall,
+                                text = "Avstand",
+                                modifier = Modifier.padding(2.dp)
+                            )
+                        }
+                    }*/
+
+                    /*TextButton(onClick = {
                         if (knapp == "Se alle") { // når du går fra forslag side til se alle side
                             knapp2("Tilbake")
                             seeAllButton = false
-                            settSuggestions(false)
+                            showSuggestions = false
                             input = ""
                             keyboard?.hide()
                         } else { //Nå du går fra Se alle til forslag siden
                             knapp2("Se alle")
                             seeAllButton = true
-                            settSuggestions(true)
+                            showSuggestions = true
                             input = ""
                         }
                     })
@@ -197,23 +245,15 @@ fun SearchScreen(
                             textAlign = TextAlign.Center,
                             textDecoration = TextDecoration.Underline
                         )
-                    }
+                    }*/
                 }
             }
-            val location = locationUiState.value.lastKnownLocation
 
-            if (location != null) {
-                searchScreenViewModel.updateSuggestions(
-                    location.latitude,
-                    location.longitude
-                )
-            }
 
             item {
                 Spacer(modifier = Modifier.height(10.dp))
             }
-            item {
-                if (input == "") {
+            /*if (input == "") {
                     if (showSuggestions) {
                         val spots = if (searchUiState.nearestSwimspots.size > 5) {
                             searchUiState.nearestSwimspots.subList(0, 4)
@@ -225,40 +265,51 @@ fun SearchScreen(
                             spots
                         )
                     }
-                } else {
-                    swimspots.forEach {
-                        var isFavorite = favorites.contains(Favorite(it.id))
-                        val toggleFavorite =
-                            if (favorites.isEmpty() || !isFavorite) {
-                                {
-                                    searchScreenViewModel.addFavorite(Favorite(it.id))
-                                    isFavorite = !isFavorite
-                                }
-                            } else {
-                                {
-                                    searchScreenViewModel.removeFavorite(Favorite(it.id))
-                                    isFavorite = !isFavorite
-                                }
-                            }
-                        val onFavoriteClick: () -> Unit = { toggleFavorite() }
+                } else {*/
 
-                        if (it.name.startsWith(input, ignoreCase = true) && input != "") {
-                            ResultCard(
-                                navcontroller = navcontroller,
-                                swimspot = it,
-                                isFavorite = isFavorite,
-                                onFavoriteClick = onFavoriteClick
-                            )
-                        } else if (!seeAllButton && input == "") {
-                            ResultCard(
-                                navcontroller = navcontroller,
-                                swimspot = it,
-                                isFavorite = isFavorite,
-                                onFavoriteClick = onFavoriteClick
-                            )
+
+            items(visibleSwimspots) { spot ->
+                //spots.forEach {
+                var isFavorite = favorites.contains(Favorite(spot.id))
+                val toggleFavorite =
+                    if (favorites.isEmpty() || !isFavorite) {
+                        {
+                            searchScreenViewModel.addFavorite(Favorite(spot.id))
+                            isFavorite = !isFavorite
+                        }
+                    } else {
+                        {
+                            searchScreenViewModel.removeFavorite(Favorite(spot.id))
+                            isFavorite = !isFavorite
                         }
                     }
-                }
+                val onFavoriteClick: () -> Unit = { toggleFavorite() }
+
+                Log.d("SearchScreen", "resultscard")
+                ResultCard(
+                    navcontroller = navcontroller,
+                    swimspot = spot,
+                    distance = spot.distance,
+                    isFavorite = isFavorite,
+                    onFavoriteClick = onFavoriteClick
+                )
+                /*} else if (it.first.name.startsWith(input, ignoreCase = true)) {
+                        ResultCard(
+                            navcontroller = navcontroller,
+                            swimspot = it.first,
+                            distance = it.second,
+                            isFavorite = isFavorite,
+                            onFavoriteClick = onFavoriteClick
+                        )
+                    } else if (!seeAllButton && input == "") {
+                        ResultCard(
+                            navcontroller = navcontroller,
+                            swimspot = it.first,
+                            distance = it.second,
+                            isFavorite = isFavorite,
+                            onFavoriteClick = onFavoriteClick
+                        )
+                    }*/
             }
         }
     }
@@ -286,10 +337,16 @@ fun FavoriteButton(color: Color = Color.Red, isFavorite: Boolean, onClick: () ->
 fun ResultCard(
     navcontroller: NavController,
     swimspot: Swimspot,
-    distance: Float = 0f,
+    distance: Float?,
     isFavorite: Boolean? = null,
     onFavoriteClick: (() -> Unit)? = null
 ){
+    val waterTypes = mapOf(
+        "FRESH" to "Ferskvann",
+        "SALT" to "Saltvann",
+        "UNKNOWN" to ""
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -303,33 +360,52 @@ fun ResultCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier
+                    .padding(start = 6.dp)
+                    .fillMaxWidth(0.6f)
             ) {
                 Text(
                     text = swimspot.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                    style = MaterialTheme.typography.headlineSmall,
                 )
-                if (distance.toInt() != 0) {
+                Spacer(modifier = Modifier.height(4.dp))
+                waterTypes[swimspot.type.toString()]?.let {
                     Text(
-                        text = "Avstand: ${(distance / 1000).roundToInt()}km",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
             }
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (isFavorite != null && onFavoriteClick != null) {
-                    FavoriteButton(Color.Red, isFavorite, onFavoriteClick)
-                }
-                else {
-                    Icon(
-                        Icons.Filled.Place,
-                        contentDescription = "Pil",
-                        modifier = Modifier.align(
-                            Alignment.TopEnd
+            Column(
+                verticalArrangement = Arrangement.SpaceAround,
+                horizontalAlignment = Alignment.End
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    if (isFavorite != null && onFavoriteClick != null) {
+                        FavoriteButton(Color.Red, isFavorite, onFavoriteClick)
+                    } else {
+                        Icon(
+                            Icons.Filled.Place,
+                            contentDescription = "Pil",
+                            modifier = Modifier.align(
+                                Alignment.TopEnd
+                            )
                         )
-                    )
+                    }
+                }
+                if (distance != null) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ),
+                    ) {
+                    Text(
+                        text = "${(distance / 1000).roundToInt()} km unna",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(4.dp)
+                    )}
                 }
             }
         }

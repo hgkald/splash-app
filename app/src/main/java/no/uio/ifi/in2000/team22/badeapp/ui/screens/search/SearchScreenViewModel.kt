@@ -22,7 +22,8 @@ import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 data class SearchUiState(
     val swimspots: List<Swimspot> = emptyList(),
     val favorites: List<Favorite> = emptyList(),
-    val nearestSwimspots: List<Pair<Swimspot, Float>> = emptyList()
+    val nearestSwimspots: List<Swimspot> = emptyList(),
+    val searchInput: String = ""
 )
 
 data class LocationUiState(
@@ -36,6 +37,7 @@ class SearchScreenViewModel(
     private val locationRepository: UserLocationRepository
 ) : ViewModel() {
     private val _searchUiState = MutableStateFlow(SearchUiState())
+
     val searchUiState: StateFlow<SearchUiState> = _searchUiState.asStateFlow()
     val locationUiState: StateFlow<LocationUiState> = locationRepository.observe()
         .map {
@@ -49,19 +51,17 @@ class SearchScreenViewModel(
             initialValue = LocationUiState()
         )
 
-    fun updateSuggestions(lat: Double, lon: Double) {
-        viewModelScope.launch {
-            Log.d("SearchViewModel", "Latest location not null, continuing")
-            _searchUiState.update {
-                it.copy(
-                    nearestSwimspots = swimspotsRepository.getNearestSwimspots(
-                        latitude = lat,
-                        longitude = lon
-                    )
-                )
+    val filteredSwimspots: StateFlow<List<Swimspot>> = searchUiState
+        .map { uiState ->
+            uiState.nearestSwimspots.filter {
+                it.name.startsWith(uiState.searchInput, ignoreCase = true)
             }
         }
-    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = emptyList()
+        )
 
     init {
         viewModelScope.launch {
@@ -83,6 +83,26 @@ class SearchScreenViewModel(
         }
     }
 
+    fun setInput(newInput: String) {
+        _searchUiState.update { currentState ->
+            currentState.copy(searchInput = newInput)
+        }
+    }
+
+    fun updateNearestSwimspots(lat: Double, lon: Double) {
+        viewModelScope.launch {
+            Log.d("SearchViewModel", "Latest location not null, continuing")
+            _searchUiState.update {
+                it.copy(
+                    nearestSwimspots = swimspotsRepository.getNearestSwimspots(
+                        latitude = lat,
+                        longitude = lon
+                    )
+                )
+            }
+        }
+    }
+
     fun addFavorite(favorite: Favorite) = viewModelScope.launch {
         Log.i("SearchScreenViewModel", "Adding favorite: $favorite to ${_searchUiState.value.favorites}")
         favoritesRepository.insert(favorite)
@@ -92,6 +112,7 @@ class SearchScreenViewModel(
         Log.i("SearchScreenViewModel", "Removing favorite: $favorite")
         favoritesRepository.delete(favorite)
     }
+
     @Suppress("UNCHECKED_CAST")
     companion object {
         fun provideFactory(
