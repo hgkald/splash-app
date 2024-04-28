@@ -1,6 +1,6 @@
 package no.uio.ifi.in2000.team22.badeapp.model.swimspots
 
-enum class SwimspotType(type: String) {
+enum class SwimspotType(val norsk: String) {
     SALT("Saltvann"),
     FRESH("Ferskvann"),
     UNKNOWN("");

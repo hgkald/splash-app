@@ -5,9 +5,6 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -30,7 +27,6 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -58,7 +54,7 @@ import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
-import kotlin.math.roundToInt
+import no.uio.ifi.in2000.team22.badeapp.ui.components.swimspot.SwimspotCard
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
@@ -223,7 +219,6 @@ fun SearchScreen(
                     SwimspotCard(
                         navcontroller = navcontroller,
                         swimspot = spot,
-                        distance = spot.distance,
                         isFavorite = isFavorite,
                         onFavoriteClick = onFavoriteClick
                     )
@@ -250,85 +245,7 @@ fun FavoriteButton(color: Color = Color.Red, isFavorite: Boolean, onClick: () ->
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SwimspotCard(
-    navcontroller: NavController,
-    swimspot: Swimspot,
-    distance: Float?,
-    isFavorite: Boolean? = null,
-    onFavoriteClick: (() -> Unit)? = null
-){
-    val waterTypes = mapOf(
-        "FRESH" to "Ferskvann",
-        "SALT" to "Saltvann",
-        "UNKNOWN" to ""
-    )
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(5.dp),
-        onClick = { navcontroller.navigate("swimspot/${swimspot.id}") },
-        border = BorderStroke(2.dp, Color.LightGray),
-        colors = CardDefaults.cardColors()
-    ) {
-        Row(
-            modifier = Modifier.padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier
-                    .padding(start = 6.dp)
-                    .fillMaxWidth(0.6f)
-            ) {
-                Text(
-                    text = swimspot.name,
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                waterTypes[swimspot.type.toString()]?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-            }
-            Column(
-                verticalArrangement = Arrangement.SpaceAround,
-                horizontalAlignment = Alignment.End
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    if (isFavorite != null && onFavoriteClick != null) {
-                        FavoriteButton(Color.Red, isFavorite, onFavoriteClick)
-                    } else {
-                        Icon(
-                            Icons.Filled.Place,
-                            contentDescription = "Pil",
-                            modifier = Modifier.align(
-                                Alignment.TopEnd
-                            )
-                        )
-                    }
-                }
-                if (distance != null) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ),
-                    ) {
-                    Text(
-                        text = "${(distance / 1000).roundToInt()} km unna",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(4.dp)
-                    )}
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun ShowFiveSuggestions(navcontroller: NavController, swimspots: List<Pair<Swimspot, Float>>) {
@@ -338,7 +255,7 @@ fun ShowFiveSuggestions(navcontroller: NavController, swimspots: List<Pair<Swims
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Absolute.Right
             ) {
-                SwimspotCard(navcontroller = navcontroller, swimspot = it.first, distance = it.second)
+                SwimspotCard(navcontroller = navcontroller, swimspot = it.first)
             }
         }
     }
