@@ -53,7 +53,7 @@ class SearchScreenViewModel(
 
     val filteredSwimspots: StateFlow<List<Swimspot>> = searchUiState
         .map { uiState ->
-            uiState.nearestSwimspots.filter {
+            uiState.swimspots.filter {
                 it.name.startsWith(uiState.searchInput, ignoreCase = true)
             }
         }
