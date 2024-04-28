@@ -22,33 +22,40 @@ private data class NavItem(
     val label: String,
     val description: String,
     val iconFilled: ImageVector,
-    val iconOutlined: ImageVector
+    val iconOutlined: ImageVector,
+    val navigationTarget: String,
 )
 
 @Composable
-fun BadeAppBottomAppBar(navcontroller: NavController) {
+fun BadeAppBottomAppBar(navcontroller: NavController, currentNavTarget: String) {
 
-    var selectedItem by remember { mutableIntStateOf(0) }
     val items = listOf(
         NavItem(
             label = "Kart",
             description = "Gå til eller åpne kartet",
             iconFilled = Icons.Default.LocationOn,
-            iconOutlined = Icons.Outlined.LocationOn
+            iconOutlined = Icons.Outlined.LocationOn,
+            navigationTarget = "home"
         ),
         NavItem(
             label = "Søk",
             description = "Gå til eller åpne søk",
             iconFilled = Icons.Default.Search,
-            iconOutlined = Icons.Filled.Search
+            iconOutlined = Icons.Filled.Search,
+            navigationTarget = "search"
         ),
         NavItem(
             label = "Favoritter",
             description = "Gå til eller åpne favoritter",
             iconFilled = Icons.Default.Favorite,
-            iconOutlined = Icons.Default.FavoriteBorder
+            iconOutlined = Icons.Default.FavoriteBorder,
+            navigationTarget = "favorites"
         )
     )
+
+    var selectedItem by remember {
+        mutableIntStateOf(items.map { it.navigationTarget }.indexOf(currentNavTarget))
+    }
 
     NavigationBar {
         items.forEachIndexed { index, item ->
@@ -62,7 +69,14 @@ fun BadeAppBottomAppBar(navcontroller: NavController) {
                 },
                 label = { Text(item.label) },
                 selected = selectedItem == index,
-                onClick = { selectedItem = index }
+                onClick = {
+                    selectedItem = index
+                    navcontroller.navigate(item.navigationTarget) {
+                        popUpTo(item.navigationTarget)
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
         }
     }

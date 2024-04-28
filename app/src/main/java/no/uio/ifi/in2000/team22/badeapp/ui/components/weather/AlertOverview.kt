@@ -16,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -111,7 +111,7 @@ fun AlertOverview(alerts: List<Alert>) {
             AlertView(
                 alert = alerts[0],
                 expanded = expanded,
-                onAlertClick = { expanded = !expanded})
+                onAlertClick = { expanded = !expanded })
         } else if (alerts.size > 1) {
             CombinedAlertView(
                 title = "Varsler i området",
@@ -153,7 +153,8 @@ fun CombinedAlertView(
                 Column {
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        overflow = TextOverflow.Ellipsis
                     )
 
                     val subtext = if (!expanded) {
@@ -163,7 +164,8 @@ fun CombinedAlertView(
                     }
                     Text(
                         text = subtext,
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
@@ -191,7 +193,7 @@ fun CombinedAlertView(
             val listState = rememberLazyListState()
             val coroutineScope = rememberCoroutineScope()
             AnimatedVisibility(visible = expanded) {
-                LazyColumn (state = listState){
+                LazyColumn(state = listState) {
                     item { Divider() }
                     alerts
                         .sortedByDescending { it.riskMatrixColor }
@@ -202,10 +204,13 @@ fun CombinedAlertView(
                                     expanded = alertExpanded == index,
                                     onAlertClick = {
                                         alertExpanded =
-                                            if (alertExpanded == index) { -1 }
-                                            else { index }
+                                            if (alertExpanded == index) {
+                                                -1
+                                            } else {
+                                                index
+                                            }
                                         coroutineScope.launch {
-                                            listState.animateScrollToItem(index = index*2)
+                                            listState.animateScrollToItem(index = index * 2)
                                         }
                                     })
                             }
@@ -241,11 +246,13 @@ fun AlertView(alert: Alert, expanded: Boolean, onAlertClick: () -> Unit) {
                     Text(
                         text = alert.eventAwarenessName,
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight(600)
+                        fontWeight = FontWeight(600),
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = "${alert.riskMatrixColor.norsk} nivå",
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -256,9 +263,9 @@ fun AlertView(alert: Alert, expanded: Boolean, onAlertClick: () -> Unit) {
                 modifier = mod
             ) {
                 AnimatedVisibility(visible = expanded) {
-                    Column (
+                    Column(
                         modifier = Modifier.padding(10.dp, 0.dp)
-                    ){
+                    ) {
                         val endTime = Instant
                             .parse(alert.eventEndingTime.toString())
                             .atZone(ZoneId.of("Europe/Oslo"))
@@ -266,12 +273,14 @@ fun AlertView(alert: Alert, expanded: Boolean, onAlertClick: () -> Unit) {
                             style = MaterialTheme.typography.bodySmall,
                             text = "Gyldig til " +
                                     "${endTime.dayOfMonth}.${endTime.monthValue}.${endTime.year}, " +
-                                    "kl.${endTime.hour}"
+                                    "kl.${endTime.hour}",
+                            overflow = TextOverflow.Ellipsis
                         )
 
                         Text(
                             style = MaterialTheme.typography.bodyMedium,
-                            text = alert.description
+                            text = alert.description,
+                            overflow = TextOverflow.Ellipsis
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -279,11 +288,13 @@ fun AlertView(alert: Alert, expanded: Boolean, onAlertClick: () -> Unit) {
                         Text(
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight(600),
-                            text = "Anbefalinger"
+                            text = "Anbefalinger",
+                            overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             style = MaterialTheme.typography.bodyMedium,
-                            text = alert.instruction
+                            text = alert.instruction,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }

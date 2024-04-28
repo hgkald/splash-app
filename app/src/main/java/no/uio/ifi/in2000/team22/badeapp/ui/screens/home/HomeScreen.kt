@@ -119,7 +119,7 @@ fun HomeScreen(
 
     Scaffold(
         topBar = { BadeAppTopAppBar() },
-        bottomBar = { BadeAppBottomAppBar(navcontroller) },
+        bottomBar = { BadeAppBottomAppBar(navcontroller, "home") },
         floatingActionButton = {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
