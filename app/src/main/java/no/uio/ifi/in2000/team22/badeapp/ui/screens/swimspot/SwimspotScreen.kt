@@ -1,6 +1,5 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.screens.swimspot
 
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -8,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +19,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -49,6 +51,7 @@ import no.uio.ifi.in2000.team22.badeapp.R
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.loading.LoadingIndicator
 import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.AlertOverview
+import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.weatherIconDrawable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +61,8 @@ fun SwimspotScreen(
 ) {
     val swimspotState: State<SwimspotUiState> = swimspotViewModel.swimSpotUiState.collectAsState()
     val weatherState: State<WeatherUiState> = swimspotViewModel.weatherUiState.collectAsState()
+    val transportUiState: State<TransportUiState> =
+        swimspotViewModel.transportUiState.collectAsState()
 
     val topBarScroll = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
@@ -107,129 +112,94 @@ fun SwimspotScreen(
         Column(
             modifier = Modifier
                 .padding(paddingValues)
+                .padding(start = 10.dp, end = 10.dp, top = 2.dp)
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
         )
         {
-            SwimspotOverview(
-                swimspotState = swimspotState,
-                weatherState = weatherState
+            Spacer(modifier = Modifier.height(20.dp))
+            AlertOverview(weatherState.value.alerts)
+
+            SubTitleDivider(title = "Kollektivtrafikk")
+            TransportOverview(stops = transportUiState.value.stops)
+
+            SubTitleDivider(title = "Vær og temperatur")
+            WeatherOverview(
+                waterTemp = weatherState.value.water,
+                airTemp = weatherState.value.weather?.airTemperature,
+                uvIndex = weatherState.value.weather?.uvIndex,
+                precipitation = weatherState.value.weather?.precipitationNextHour,
+                weatherIcon = weatherIconDrawable[weatherState.value.weather?.symbolCode]
             )
+
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
 
 @Composable
 fun SwimspotOverview(swimspotState: State<SwimspotUiState>, weatherState: State<WeatherUiState>) {
-    Column(
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        state = rememberLazyGridState(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier
-//            .verticalScroll(rememberScrollState())
-            .padding(start = 15.dp, end = 15.dp)
+            .sizeIn(maxHeight = 600.dp)
             .fillMaxWidth()
     ) {
+        item(span = {
+            GridItemSpan(maxLineSpan)
+        }) {
+            WaterTempInfo(temperature = weatherState.value.water)
+        }
 
-        val waterTemperatureLoaded = (weatherState.value.water == null)
+        // --- Weather info ---
 
-        Log.d("SwimspotScreen", "Current max width is ${LocalConfiguration.current.screenWidthDp}")
-
-//        Text(
-//            text = "${swimspotState.value.swimspot?.name}",
-//            style = MaterialTheme.typography.displayMedium,
-//            modifier = Modifier.padding(bottom = 14.dp)
-//        )
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            state = rememberLazyGridState(),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier
-                .padding(top = 10.dp)
-                .fillMaxWidth()
-        ) {
-            item(span = {
-                GridItemSpan(maxLineSpan)
-            }) {
-                AlertOverview(weatherState.value.alerts)
-            }
-
-            item(span = {
-                GridItemSpan(maxLineSpan)
-            }) {
-                SubTitleDivider(title = "Vær og temperatur")
-            }
-
-            item(span = {
-                GridItemSpan(maxLineSpan)
-            }) {
-                LargeInfoCard {
-                    if (waterTemperatureLoaded) {
-                        Text(
-                            text = "12° i vannet",
-                            style = MaterialTheme.typography.headlineLarge,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = "Sist målt 2 dager siden",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    } else {
-                        LoadingIndicator(onErrorText = "Ingen registrerte badetemperaturer for dette badestedet")
-                    }
-
-                }
-            }
-
-            val weather = weatherState.value.weather
-            if (weather != null) {
-                val textWeatherValues = listOf(Pair("${weather.airTemperature}", "Luftemperatur"))
-
-
-                item(span = {
-                    GridItemSpan(1)
-                }) {
-                    InfoCardImage(
-                        id = R.drawable.partlycloudy_day,
-                        contentDescription = "partlycloudy day",
-                        label = "Værforhold"
-                    )
-                }
-
-                item(span = {
-                    GridItemSpan(1)
-                }) {
-                    InfoCard(text = "16°", label = "Lufttemperatur")
-                }
-
-                item(span = {
-                    GridItemSpan(1)
-                }) {
-                    InfoCard(text = "3", label = "Lavt UV-nivå")
-                }
-
-                item(span = {
-                    GridItemSpan(1)
-                }) {
-                    InfoCard(text = "0.5mm", label = "Nedbør neste timen")
-                }
-            } else {
-                item(span = {
-                    GridItemSpan(maxLineSpan)
-                }) {
-                    WideInfoCard {
-                        LoadingIndicator(onErrorText = "Kunne ikke hente værinformasjon for badestedet")
-                    }
-                }
-            }
-
+        val weather = weatherState.value.weather
+        if (weather != null) {
+            val textWeatherValues = listOf(Pair("${weather.airTemperature}", "Luftemperatur"))
 
 
             item(span = {
+                GridItemSpan(1)
+            }) {
+                InfoCardImage(
+                    id = R.drawable.partlycloudy_day,
+                    contentDescription = "partlycloudy day",
+                    label = "Værforhold"
+                )
+            }
+
+            item(span = {
+                GridItemSpan(1)
+            }) {
+                InfoCard(text = "16°", label = "Lufttemperatur")
+            }
+
+            item(span = {
+                GridItemSpan(1)
+            }) {
+                InfoCard(text = "3", label = "Lavt UV-nivå")
+            }
+
+            item(span = {
+                GridItemSpan(1)
+            }) {
+                InfoCard(text = "0.5mm", label = "Nedbør neste timen")
+            }
+        } else {
+            item(span = {
                 GridItemSpan(maxLineSpan)
             }) {
-                SubTitleDivider(title = "Kollektivtilbud i nærheten")
+                WideInfoCard {
+                    LoadingIndicator(onErrorText = "Kunne ikke hente værinformasjon for badestedet")
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun LargeInfoCard(

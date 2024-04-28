@@ -42,8 +42,8 @@ import kotlin.math.roundToInt
 
 @Preview(showSystemUi = true)
 @Composable
-fun WeatherOverviewPreview() {
-    WeatherOverview(
+fun WeatherOverviewPreview2() {
+    WeatherOverview2(
         waterTemp = 20.0,
         waterTempTime = Instant.now(),
         airTemp = 21.0,
@@ -53,7 +53,7 @@ fun WeatherOverviewPreview() {
 }
 
 @Composable
-fun WeatherOverview(
+fun WeatherOverview2(
     waterTemp: Double?,
     waterTempTime: Instant?,
     airTemp: Double?,

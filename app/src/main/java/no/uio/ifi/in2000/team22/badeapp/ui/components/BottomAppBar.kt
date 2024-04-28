@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 
 private data class NavItem(
@@ -67,7 +68,12 @@ fun BadeAppBottomAppBar(navcontroller: NavController, currentNavTarget: String) 
                         Icon(item.iconOutlined, contentDescription = item.description)
                     }
                 },
-                label = { Text(item.label) },
+                label = {
+                    Text(
+                        text = item.label,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
                 selected = selectedItem == index,
                 onClick = {
                     selectedItem = index
