@@ -147,7 +147,7 @@ fun CombinedAlertView(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 AlertIcon(
-                    alert = alerts[0],
+                    alert = alerts.sortedByDescending { it.riskMatrixColor }[0],
                     modifier = Modifier.padding(10.dp)
                 )
                 Column {
