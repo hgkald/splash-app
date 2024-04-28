@@ -44,7 +44,6 @@ fun SwimspotCard(
             .fillMaxWidth()
             .padding(5.dp),
         onClick = { navcontroller.navigate("swimspot/${swimspot.id}") },
-        border = BorderStroke(2.dp, Color.LightGray),
         colors = CardDefaults.cardColors()
     ) {
         Row(
@@ -56,11 +55,11 @@ fun SwimspotCard(
                 horizontalAlignment = Alignment.Start,
                 modifier = Modifier
                     .padding(start = 6.dp)
-                    .fillMaxWidth(0.6f)
+                    .fillMaxWidth(0.7f)
             ) {
                 Text(
                     text = swimspot.name,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 if(swimspot.type != SwimspotType.UNKNOWN) {
