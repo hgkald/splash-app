@@ -15,10 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,8 +25,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -47,9 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import no.uio.ifi.in2000.team22.badeapp.R
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
-import no.uio.ifi.in2000.team22.badeapp.ui.components.loading.LoadingIndicator
 import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.AlertOverview
 import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.weatherIconDrawable
 
@@ -68,16 +62,15 @@ fun SwimspotScreen(
 
     Scaffold(
         topBar = {
-            LargeTopAppBar(
+            MediumTopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    containerColor = MaterialTheme.colorScheme.surface,
                 ),
                 title = {
                     Text(
                         text = "${swimspotState.value.swimspot?.name}",
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Visible
                     )
                 },
                 navigationIcon = {
@@ -117,7 +110,12 @@ fun SwimspotScreen(
                 .verticalScroll(rememberScrollState())
         )
         {
-            Spacer(modifier = Modifier.height(20.dp))
+//            Text(
+//                text = "${swimspotState.value.swimspot?.name}",
+//                style = MaterialTheme.typography.headlineMedium,
+//                modifier = Modifier.padding(bottom = 14.dp)
+//            )
+            Spacer(modifier = Modifier.height(10.dp))
             AlertOverview(weatherState.value.alerts)
 
             SubTitleDivider(title = "Kollektivtrafikk")
@@ -136,70 +134,6 @@ fun SwimspotScreen(
         }
     }
 }
-
-@Composable
-fun SwimspotOverview(swimspotState: State<SwimspotUiState>, weatherState: State<WeatherUiState>) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        state = rememberLazyGridState(),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier
-            .sizeIn(maxHeight = 600.dp)
-            .fillMaxWidth()
-    ) {
-        item(span = {
-            GridItemSpan(maxLineSpan)
-        }) {
-            WaterTempInfo(temperature = weatherState.value.water)
-        }
-
-        // --- Weather info ---
-
-        val weather = weatherState.value.weather
-        if (weather != null) {
-            val textWeatherValues = listOf(Pair("${weather.airTemperature}", "Luftemperatur"))
-
-
-            item(span = {
-                GridItemSpan(1)
-            }) {
-                InfoCardImage(
-                    id = R.drawable.partlycloudy_day,
-                    contentDescription = "partlycloudy day",
-                    label = "Værforhold"
-                )
-            }
-
-            item(span = {
-                GridItemSpan(1)
-            }) {
-                InfoCard(text = "16°", label = "Lufttemperatur")
-            }
-
-            item(span = {
-                GridItemSpan(1)
-            }) {
-                InfoCard(text = "3", label = "Lavt UV-nivå")
-            }
-
-            item(span = {
-                GridItemSpan(1)
-            }) {
-                InfoCard(text = "0.5mm", label = "Nedbør neste timen")
-            }
-        } else {
-            item(span = {
-                GridItemSpan(maxLineSpan)
-            }) {
-                WideInfoCard {
-                    LoadingIndicator(onErrorText = "Kunne ikke hente værinformasjon for badestedet")
-                }
-            }
-        }
-    }
-}
-
 
 @Composable
 fun LargeInfoCard(
