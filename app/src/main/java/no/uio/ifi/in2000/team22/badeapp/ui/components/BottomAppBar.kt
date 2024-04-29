@@ -71,7 +71,6 @@ fun BadeAppBottomAppBar(navcontroller: NavController, screen: Screen?) {
                                 restoreState = true
                             }
                         }
-                        Log.d("BottomAppBar", selectedItem.toString() + index.toString())
                     }
                 )
             }

@@ -8,6 +8,7 @@ import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 class SwimspotsRepository(private val context: Context) {
     private val datasource = SwimspotsDataSource
     private var swimspots = emptyList<Swimspot>()
+    private var swimspotsDistanceFrom: Pair<Double, Double>? = null
 
     /**
      * Gets a list of all swimspots from [SwimspotsDataSource]. This runs disk IO, and should use Dispatchers.IO
@@ -38,7 +39,40 @@ class SwimspotsRepository(private val context: Context) {
     }
 
     /**
-     * Sort swimspots after distance to a given point, and return the x nearest swimspots
+     * Returns true if distance parameter in swimspots are calculated from a certain point
+     */
+    fun swimspotshaveDistance(): Boolean {
+        return swimspotsDistanceFrom != null
+    }
+
+    /**
+     * Calculates distances from latitude and longitude to each swimspot.
+     *
+     * @param latitude
+     * @param longitude
+     */
+    fun calculateDistancesFrom(
+        latitude: Double,
+        longitude: Double,
+    ){
+        try {
+            swimspots
+                .map {
+                    val results: FloatArray = floatArrayOf(0F)
+                    Location.distanceBetween(latitude, longitude, it.lat, it.lon, results)
+
+                    it.distance = results.first()
+                    it
+                }
+            swimspotsDistanceFrom = Pair(latitude, longitude)
+        } catch (e: Exception) {
+            Log.d("SwimspotsRepo", "Exception at getNearestSwimspots()")
+            swimspotsDistanceFrom = null
+        }
+    }
+
+    /**
+     * Return the x nearest swimspots from a given point. Calculates distance if not already done
      *
      * @param latitude
      * @param longitude
@@ -49,31 +83,19 @@ class SwimspotsRepository(private val context: Context) {
         longitude: Double,
         limit: Int = swimspots.size
     ): List<Swimspot> {
-        Log.d("SwimspotsRepo", "beep getting nearest swimSpots")
-
+        if (!swimspotshaveDistance()) {
+            calculateDistancesFrom(latitude, longitude)
+        }
         val swimspotsSorted = try {
             swimspots
-                .map {
-                    val results: FloatArray = floatArrayOf(0F)
-                    Location.distanceBetween(latitude, longitude, it.lat, it.lon, results)
-
-                    it.distance = results.first()
-                    it
-                    //Pair(it, distance)
-                }
                 .sortedBy {
                     it.distance
                 }.subList(0, limit - 1)
         } catch (e: Exception) {
             Log.d("SwimspotsRepo", "Exception at getNearestSwimspots()")
             swimspots
-                /*.map {
-                    Pair(it, 0f)
-                }
-                .subList(0, limit - 1)*/
-
+                .subList(0, limit - 1)
         }
-
         Log.d("SwimspotsRepo", "Returning list of nearest swimspots: ${swimspotsSorted.size}")
 
         return swimspotsSorted
