@@ -33,7 +33,7 @@ fun SwimspotScreen(
 
     Scaffold(
         topBar = { BadeAppTopAppBar() },
-        bottomBar = { BadeAppBottomAppBar(navController) }
+        bottomBar = { BadeAppBottomAppBar(navController, null) }
     ) { paddingValues ->
         Column(
             modifier = Modifier

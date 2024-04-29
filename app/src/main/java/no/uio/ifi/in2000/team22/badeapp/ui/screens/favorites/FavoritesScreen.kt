@@ -22,6 +22,7 @@ import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
 import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppTopAppBar
+import no.uio.ifi.in2000.team22.badeapp.ui.components.Screen
 import no.uio.ifi.in2000.team22.badeapp.ui.components.swimspot.SwimspotCard
 
 @Composable
@@ -40,7 +41,7 @@ fun FavoritesScreen(
 
     Scaffold (
         topBar = { BadeAppTopAppBar() },
-        bottomBar = { BadeAppBottomAppBar(navcontroller = navController) },
+        bottomBar = { BadeAppBottomAppBar(navcontroller = navController, Screen.Favorites) },
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         },
@@ -69,7 +70,7 @@ fun FavoritesScreen(
                                 scope.launch {
                                     val result = snackbarHostState
                                         .showSnackbar(
-                                            message = "${swimspot.name} har blitt slettet fra favorittene.",
+                                            message = "${swimspot.name} har blitt slettet fra dine favoritter.",
                                             actionLabel = "Angre",
                                             duration = SnackbarDuration.Long,
                                             withDismissAction = true

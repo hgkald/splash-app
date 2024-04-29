@@ -54,6 +54,7 @@ import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
+import no.uio.ifi.in2000.team22.badeapp.ui.components.Screen
 import no.uio.ifi.in2000.team22.badeapp.ui.components.swimspot.SwimspotCard
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -122,7 +123,7 @@ fun SearchScreen(
                 )
             )
         },
-        bottomBar = { BadeAppBottomAppBar(navcontroller) },
+        bottomBar = { BadeAppBottomAppBar(navcontroller, Screen.Search) },
         floatingActionButton = {
             val showButton by remember {
                 derivedStateOf { scrollState.firstVisibleItemIndex > 0 }

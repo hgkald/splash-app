@@ -1,25 +1,82 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.components
 
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.width
+import android.util.Log
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
 
+sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
+    object Settings : Screen(
+        route = "home",
+        label = "Innstillinger",
+        icon = Icons.Filled.Settings
+    )
+    object Search : Screen(
+        route = "search",
+        label = "Søk",
+        icon = Icons.Filled.Search
+    )
+    object Home : Screen(
+        route = "home",
+        label = "Kart",
+        icon = Icons.Filled.LocationOn
+    )
+    object Favorites : Screen(
+        route = "favorites",
+        label = "Favoritter",
+        icon = Icons.Filled.Favorite
+    )
+}
+
+
 @Composable
-fun BadeAppBottomAppBar(navcontroller: NavController) {
+fun BadeAppBottomAppBar(navcontroller: NavController, screen: Screen?) {
+    val items = listOf(
+        Screen.Search,
+        Screen.Home,
+        Screen.Favorites,
+        Screen.Settings
+    )
+
+    var selectedItem by remember { mutableIntStateOf(items.indexOf(screen)) }
 
     BottomAppBar {
-        for (i in 1..4) {
+        NavigationBar {
+            items.forEachIndexed { index, item ->
+                NavigationBarItem(
+                    icon = { Icon(item.icon, contentDescription = item.label) },
+                    label = { Text(item.label) },
+                    selected = selectedItem == index,
+                    alwaysShowLabel = false,
+                    onClick = {
+                        selectedItem = index
+                        navcontroller.navigate(item.route) {
+                            if (item == Screen.Home) {
+                                popUpTo(item.route)
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                        Log.d("BottomAppBar", selectedItem.toString() + index.toString())
+                    }
+                )
+            }
+        }
+        /*for (i in 1..4) {
             IconButton(
                 onClick = {
                     if (i == 2) navcontroller.navigate("search")
@@ -41,6 +98,6 @@ fun BadeAppBottomAppBar(navcontroller: NavController) {
                     4 -> Icon(Icons.Filled.Star, contentDescription = "Favoritter")
                 }
             }
-        }
+        }*/
     }
 }
