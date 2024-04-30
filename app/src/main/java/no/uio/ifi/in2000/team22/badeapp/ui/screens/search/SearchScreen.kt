@@ -44,6 +44,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -186,37 +187,35 @@ fun SearchScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    //.wrapContentWidth()
             ) {
                 val header = if (input == "") {
                     "Finn badeplasser"
                 } else {
                     "Søkeresultater"
                 }
-                        Text(
-                            text = header,
-                            style = MaterialTheme.typography.titleLarge,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .padding(start = 12.dp)
-                                .fillMaxWidth(0.5f)
-                                //.weight(1f)
-                        )
-
+                Text(
+                    text = header,
+                    style = MaterialTheme.typography.titleLarge,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(start = 16.dp)
+                        .fillMaxWidth(0.5f)
+                )
 
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 72.dp),
-                    modifier = Modifier.widthIn(min = 72.dp, max = 200.dp)
+                    modifier = Modifier.widthIn(min = 72.dp, max = 200.dp).padding(4.dp)
                 ) {
-                    //Box(modifier = Modifier
-                    //    .fillMaxWidth(0.5f)
-                    //) {
                     val filterChipModifier = Modifier.padding(2.dp)
 
-                    //Row (modifier = Modifier.wrapContentSize()){
                     @Composable
                     fun FilterChipText(text: String) {
-                        Text(text = text, textAlign = TextAlign.Center, overflow = TextOverflow.Visible, style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            text = text,
+                            textAlign = TextAlign.Center,
+                            overflow = TextOverflow.Visible,
+                            style = MaterialTheme.typography.labelMedium
+                        )
                     }
                     item {
                         FilterChip(
@@ -240,35 +239,26 @@ fun SearchScreen(
             LazyColumn(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start,
+                state = scrollState,
                 modifier = Modifier
                     .padding(12.dp)
             ) {
-                item {
 
-                }
-
-
-                /*     LazyColumn(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 6.dp)
-            ) {*/
                 item {
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                items(visibleSwimspots) { spot ->
-                    var isFavorite = favorites.contains(Favorite(spot.id))
+                items(visibleSwimspots) { swimspot ->
+                    var isFavorite = favorites.contains(Favorite(swimspot.id))
                     val toggleFavorite =
                         if (favorites.isEmpty() || !isFavorite) {
                             {
-                                searchScreenViewModel.addFavorite(Favorite(spot.id))
+                                searchScreenViewModel.addFavorite(swimspot.id)
                                 isFavorite = !isFavorite
                             }
                         } else {
                             {
-                                searchScreenViewModel.removeFavorite(Favorite(spot.id))
+                                searchScreenViewModel.removeFavorite(swimspot.id)
                                 isFavorite = !isFavorite
                             }
                         }
@@ -276,10 +266,10 @@ fun SearchScreen(
 
                     Log.d("SearchScreen", "resultscard")
 
-                    if (spot.name.startsWith(input, ignoreCase = true)) {
+                    if (swimspot.name.startsWith(input, ignoreCase = true)) {
                         SwimspotCard(
                             navcontroller = navcontroller,
-                            swimspot = spot,
+                            swimspot = swimspot,
                             isFavorite = isFavorite,
                             onFavoriteClick = onFavoriteClick
                         )

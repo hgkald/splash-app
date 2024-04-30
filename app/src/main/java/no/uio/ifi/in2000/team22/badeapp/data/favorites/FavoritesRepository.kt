@@ -2,6 +2,7 @@ package no.uio.ifi.in2000.team22.badeapp.data.favorites
 
 import androidx.annotation.WorkerThread
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 import no.uio.ifi.in2000.team22.badeapp.persistence.FavoritesDao
 
@@ -13,17 +14,18 @@ class FavoritesRepository(private val favoritesDao: FavoritesDao) {
 
     val allFavorites: Flow<List<Favorite>> = favoritesDao.getAll()
 
-    fun observe(): Flow<List<Favorite>> {
-        return favoritesDao.getAll()
+    suspend fun isFavorite(id: Int): Boolean {
+        val favorites = allFavorites.first()
+        return favorites.any { it.id == id }
     }
 
     @WorkerThread
-    suspend fun insert(favorite: Favorite) {
-        favoritesDao.insert(favorite)
+    suspend fun insert(id: Int) {
+        favoritesDao.insert(Favorite(id))
     }
 
     @WorkerThread
-    suspend fun delete(favorite: Favorite) {
-        favoritesDao.delete(favorite)
+    suspend fun delete(id: Int) {
+        favoritesDao.delete(Favorite(id))
     }
 }

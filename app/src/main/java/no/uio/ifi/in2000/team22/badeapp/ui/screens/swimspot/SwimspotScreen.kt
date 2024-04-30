@@ -19,8 +19,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -43,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import io.ktor.util.reflect.instanceOf
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.AlertOverview
 import no.uio.ifi.in2000.team22.badeapp.ui.components.weather.weatherIconDrawable
@@ -90,10 +94,25 @@ fun SwimspotScreen(
                             contentDescription = "Se hvor badeplassen ligger i kartet"
                         )
                     }
-                    IconButton(onClick = { /*TODO*/ }) {
+                    val isFavorite = swimspotState.value.isFavorite
+                    val favoriteIcon = if (isFavorite) { Icons.Default.Favorite }
+                        else { Icons.Outlined.FavoriteBorder }
+                    val favoriteDescription = if (isFavorite) { "Ta bort badeplassen som favoritt" }
+                        else { "Legg til badeplassen som favoritt" }
+
+                    IconButton(
+                        onClick = {
+                            if (isFavorite) {
+                                swimspotState.value.swimspot?.let { swimspotViewModel.removeFavorite(it.id) }
+                            }
+                            else {
+                                swimspotState.value.swimspot?.let { swimspotViewModel.addFavorite(it.id) }
+                            }
+                        }
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.FavoriteBorder,
-                            contentDescription = "Legg til badeplassen som favoritt"
+                            imageVector = favoriteIcon,
+                            contentDescription = favoriteDescription
                         )
                     }
                 },

@@ -86,7 +86,9 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("swimspot/{swimspotId}") {
                             val swimspotViewModel: SwimspotViewModel = viewModel(
-                                factory = SwimspotViewModel.provideFactory(swimspotsRepository)
+                                factory = SwimspotViewModel.provideFactory(
+                                    swimspotsRepository,
+                                    favoritesRepository)
                             )
                             SwimspotScreen(navController, swimspotViewModel)
                         }

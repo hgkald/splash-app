@@ -103,14 +103,14 @@ class SearchScreenViewModel(
         }
     }
 
-    fun addFavorite(favorite: Favorite) = viewModelScope.launch {
-        Log.i("SearchScreenViewModel", "Adding favorite: $favorite to ${_searchUiState.value.favorites}")
-        favoritesRepository.insert(favorite)
+    fun addFavorite(id: Int) = viewModelScope.launch {
+        Log.i("SearchScreenViewModel", "Adding favorite: $id to ${_searchUiState.value.favorites}")
+        favoritesRepository.insert(id)
     }
 
-    fun removeFavorite(favorite: Favorite) = viewModelScope.launch {
-        Log.i("SearchScreenViewModel", "Removing favorite: $favorite")
-        favoritesRepository.delete(favorite)
+    fun removeFavorite(id: Int) = viewModelScope.launch {
+        Log.i("SearchScreenViewModel", "Removing favorite: $id")
+        favoritesRepository.delete(id)
     }
 
     @Suppress("UNCHECKED_CAST")

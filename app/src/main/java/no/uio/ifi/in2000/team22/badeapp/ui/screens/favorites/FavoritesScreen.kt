@@ -70,7 +70,7 @@ fun FavoritesScreen(
                             swimspot = swimspot,
                             isFavorite = true,
                             onFavoriteClick = {
-                                viewModel.delete(Favorite(swimspot.id))
+                                viewModel.delete(swimspot.id)
                                 scope.launch {
                                     val result = snackbarHostState
                                         .showSnackbar(
@@ -81,7 +81,7 @@ fun FavoritesScreen(
                                         )
                                     when (result) {
                                         SnackbarResult.ActionPerformed -> {
-                                            viewModel.insert(Favorite(swimspot.id))
+                                            viewModel.insert(swimspot.id)
                                         }
 
                                         SnackbarResult.Dismissed -> {

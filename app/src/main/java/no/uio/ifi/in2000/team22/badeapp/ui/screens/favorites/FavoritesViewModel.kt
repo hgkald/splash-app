@@ -48,14 +48,14 @@ class FavoritesViewModel(
         }
     }
 
-    fun insert(favorite: Favorite) = viewModelScope.launch {
-        Log.i("favoritesViewModel", "Adding favorite: $favorite to ${_favoritesUiState.value.favorites}")
-        repository.insert(favorite)
+    fun insert(id: Int) = viewModelScope.launch {
+        Log.i("favoritesViewModel", "Adding favorite: $id to ${_favoritesUiState.value.favorites}")
+        repository.insert(id)
     }
 
-    fun delete(favorite: Favorite) = viewModelScope.launch {
-        Log.i("favoritesViewModel", "Removing favorite: $favorite")
-        repository.delete(favorite)
+    fun delete(id: Int) = viewModelScope.launch {
+        Log.i("favoritesViewModel", "Removing favorite: $id")
+        repository.delete(id)
     }
 
     @Suppress("UNCHECKED_CAST")
