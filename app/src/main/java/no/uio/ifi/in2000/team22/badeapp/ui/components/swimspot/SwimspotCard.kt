@@ -1,6 +1,5 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.components.swimspot
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -26,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimspotType
-import no.uio.ifi.in2000.team22.badeapp.ui.screens.search.FavoriteButton
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,7 +70,7 @@ fun SwimspotCard(
                 }
             }
             Column(
-                verticalArrangement = Arrangement.SpaceAround,
+                verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.End
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -100,6 +100,23 @@ fun SwimspotCard(
                     }
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FavoriteButton(color: Color = Color.Red, isFavorite: Boolean, onClick: () -> Unit) {
+    Box(contentAlignment = Alignment.TopEnd, modifier = Modifier.fillMaxSize()) {
+        Card(onClick = onClick) {
+            Icon(
+                tint = color, imageVector = if (isFavorite) {
+                    Icons.Filled.Favorite
+                } else {
+                    Icons.Default.FavoriteBorder
+                },
+                contentDescription = "Legg til i favoritter"
+            )
         }
     }
 }

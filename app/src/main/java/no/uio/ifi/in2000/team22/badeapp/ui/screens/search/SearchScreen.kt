@@ -5,9 +5,9 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -17,34 +17,33 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,15 +55,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
@@ -76,7 +72,7 @@ import no.uio.ifi.in2000.team22.badeapp.ui.components.Screen
 import no.uio.ifi.in2000.team22.badeapp.ui.components.swimspot.SwimspotCard
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     navcontroller: NavController,
@@ -101,8 +97,7 @@ fun SearchScreen(
     visibleSwimspots =
         if (input == "" && nearestSwimspots.isNotEmpty()) {
             nearestSwimspots
-        }
-        else {
+        } else {
             swimspots
         }
 
@@ -110,13 +105,18 @@ fun SearchScreen(
         visibleSwimspots =
             if (freshwaterOnly && saltwaterOnly) {
                 visibleSwimspots
-                    .filter { swimspot -> swimspot.type == SwimspotType.FRESH || swimspot.type == SwimspotType.SALT }
+                    .filter { swimspot ->
+                        swimspot.type in listOf(
+                            SwimspotType.FRESH,
+                            SwimspotType.SALT
+                        )
+                    }
             } else if (!(freshwaterOnly || saltwaterOnly)) {
                 visibleSwimspots
             } else {
                 visibleSwimspots
-                    .filter { swimspot -> if (freshwaterOnly) swimspot.type == SwimspotType.FRESH else true}
-                    .filter { swimspot -> if (saltwaterOnly) swimspot.type == SwimspotType.SALT else true}
+                    .filter { swimspot -> if (freshwaterOnly) swimspot.type == SwimspotType.FRESH else true }
+                    .filter { swimspot -> if (saltwaterOnly) swimspot.type == SwimspotType.SALT else true }
             }
     }
 
@@ -139,7 +139,7 @@ fun SearchScreen(
                 onValueChange = {
                     searchScreenViewModel.setInput(it)
                 },
-                label = { Text("Søk alle badeplasser") },
+                label = { Text("Søk her") },
                 singleLine = true,
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Søk") },
                 trailingIcon = {
@@ -180,86 +180,80 @@ fun SearchScreen(
 
     )
     {
-        Column (
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start,
-            modifier = Modifier
-                .padding(it)
-                .padding(12.dp)
-        ){
-            Row (
+        Column(modifier = Modifier.padding(it)) {
+            Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    //.wrapContentWidth()
             ) {
                 val header = if (input == "") {
                     "Finn badeplasser"
                 } else {
                     "Søkeresultater"
                 }
-                Text(
-                    text = header,
-                    style = MaterialTheme.typography.titleLarge,
-                )
-
-                /*var expanded by remember { mutableStateOf(false) }
-                Box(modifier = Modifier
-                    .height(IntrinsicSize.Min)
-                ) {
-                    Card(
-                        colors = CardDefaults.outlinedCardColors(),
-                        modifier = Modifier
-                            .clickable(onClick = { expanded = true })
-                    ) {
                         Text(
-                            text = "Vanntype",
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.padding(2.dp))
+                            text = header,
+                            style = MaterialTheme.typography.titleLarge,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .padding(start = 12.dp)
+                                .fillMaxWidth(0.5f)
+                                //.weight(1f)
+                        )
+
+
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 72.dp),
+                    modifier = Modifier.widthIn(min = 72.dp, max = 200.dp)
+                ) {
+                    //Box(modifier = Modifier
+                    //    .fillMaxWidth(0.5f)
+                    //) {
+                    val filterChipModifier = Modifier.padding(2.dp)
+
+                    //Row (modifier = Modifier.wrapContentSize()){
+                    @Composable
+                    fun FilterChipText(text: String) {
+                        Text(text = text, textAlign = TextAlign.Center, overflow = TextOverflow.Visible, style = MaterialTheme.typography.labelSmall)
                     }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Ferskvann") },
+                    item {
+                        FilterChip(
                             onClick = { freshwaterOnly = !freshwaterOnly },
-                            trailingIcon = { if (freshwaterOnly) Icon(Icons.Filled.Check, "Ferskvann") }
+                            label = { FilterChipText(text = "Ferskvann") },
+                            selected = freshwaterOnly,
+                            modifier = filterChipModifier
                         )
-                        DropdownMenuItem(
-                            text = { Text("Saltvann") },
+                    }
+                    item {
+                        FilterChip(
                             onClick = { saltwaterOnly = !saltwaterOnly },
-                            trailingIcon = { if (saltwaterOnly) Icon(Icons.Filled.Check, "Saltvann") }
+                            label = { FilterChipText(text = "Saltvann") },
+                            selected = saltwaterOnly,
+                            modifier = filterChipModifier
                         )
                     }
                 }
-            }*/
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                val filterChipModifier = Modifier.padding(2.dp)
-                @Composable
-                fun FilterChipText(text: String) {
-                    Text(text = text, style = MaterialTheme.typography.labelMedium)
-                }
-                FilterChip(
-                    onClick = { freshwaterOnly = !freshwaterOnly },
-                    label = { FilterChipText(text = "Ferskvann") },
-                    selected = freshwaterOnly,
-                    modifier = filterChipModifier
-                )
-                FilterChip(
-                    onClick = { saltwaterOnly = !saltwaterOnly },
-                    label = { FilterChipText(text = "Saltvann") },
-                    selected = saltwaterOnly,
-                    modifier = filterChipModifier
-                )
             }
 
             LazyColumn(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier
+                    .padding(12.dp)
+            ) {
+                item {
+
+                }
+
+
+                /*     LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 6.dp)
-            ) {
+            ) {*/
                 item {
                     Spacer(modifier = Modifier.height(10.dp))
                 }
@@ -296,22 +290,8 @@ fun SearchScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun FavoriteButton(color: Color = Color.Red, isFavorite: Boolean, onClick: () -> Unit) {
-    Box(contentAlignment = Alignment.TopEnd, modifier = Modifier.fillMaxSize()) {
-        Card(onClick = onClick) {
-            Icon(
-                tint = color, imageVector = if (isFavorite) {
-                    Icons.Filled.Favorite
-                } else {
-                    Icons.Default.FavoriteBorder
-                },
-                contentDescription = "Legg til i favoritter"
-            )
-        }
-    }
-}
+
+
 
 
 

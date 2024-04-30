@@ -83,12 +83,12 @@ fun BadeAppBottomAppBar(navcontroller: NavController, screen: Screen?) {
                     selected = selectedItem == index,
                     alwaysShowLabel = false,
                     onClick = {
-                        selectedItem = index
                         navcontroller.navigate(item.navigationTarget) {
                             popUpTo(item.navigationTarget)
                             launchSingleTop = true
                             restoreState = true
                         }
+                        selectedItem = index
                     }
                 )
             }
