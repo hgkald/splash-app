@@ -20,24 +20,30 @@ class EnTurDataSource {
         }
     }
 
-    suspend fun getData(lat: Double, lon: Double, radius: Int, size: Int, layers: String): Root {
-        val response = client.get(path) {
-            url {
-                parameters.append("point.lat", "$lat")
-                parameters.append("point.lon", "$lon")
-                parameters.append("boundary.circle.radius", "$radius")
-                parameters.append("size", "$size")
-                parameters.append("layers", layers)
+    suspend fun getData(lat: Double, lon: Double, radius: Int, size: Int, layers: String): Root? {
+        return try {
+            val response = client.get(path) {
+                url {
+                    parameters.append("point.lat", "$lat")
+                    parameters.append("point.lon", "$lon")
+                    parameters.append("boundary.circle.radius", "$radius")
+                    parameters.append("size", "$size")
+                    parameters.append("layers", layers)
+                }
             }
+            Log.d("EnTurDataSource", "HTTP status : ${response.status}")
+            response.body<Root>()
+        } catch (e: Exception) {
+            Log.e("EnturDataSource", "Error while fetching data.")
+            Log.e("EnturDataSource", e.message.toString())
+            null
         }
-        Log.d("EnTurDataSource", "HTTP status : ${response.status}")
-        return response.body<Root>()
     }
 
     suspend fun getStops(lat: Double, lon: Double, radius: Int, size: Int): List<StopPlace> {
 
         val stops = mutableListOf<StopPlace>()
-        val data = getData(lat, lon, radius, size, layers = "venue")
+        val data = getData(lat, lon, radius, size, layers = "venue") ?: return emptyList()
 
         data.features.forEach {
             val properties = it.properties

@@ -119,7 +119,6 @@ fun HomeScreen(
 
 
     Scaffold(
-        topBar = { BadeAppTopAppBar() },
         bottomBar = { BadeAppBottomAppBar(navcontroller, Screen.Home) },
         floatingActionButton = {
             Column(

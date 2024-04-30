@@ -1,12 +1,14 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.components
 
-import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -17,28 +19,36 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavController
 
-sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
-    object Settings : Screen(
-        route = "home",
-        label = "Innstillinger",
-        icon = Icons.Filled.Settings
+sealed class Screen(
+    val navigationTarget: String,
+    val label: String,
+    val description: String,
+    val iconFilled: ImageVector,
+    val iconOutlined: ImageVector
+) {
+    object Home : Screen(
+        navigationTarget = "home",
+        label = "Kart",
+        description = "Gå til eller åpne kartet",
+        iconFilled = Icons.Default.LocationOn,
+        iconOutlined = Icons.Outlined.LocationOn
     )
     object Search : Screen(
-        route = "search",
+        navigationTarget = "search",
         label = "Søk",
-        icon = Icons.Filled.Search
-    )
-    object Home : Screen(
-        route = "home",
-        label = "Kart",
-        icon = Icons.Filled.LocationOn
+        description = "Gå til eller åpne søk",
+        iconFilled = Icons.Default.Search,
+        iconOutlined = Icons.Outlined.Search,
     )
     object Favorites : Screen(
-        route = "favorites",
+        navigationTarget = "favorites",
         label = "Favoritter",
-        icon = Icons.Filled.Favorite
+        description = "Gå til eller åpne favoritter",
+        iconFilled = Icons.Default.Favorite,
+        iconOutlined = Icons.Outlined.FavoriteBorder,
     )
 }
 
@@ -46,10 +56,9 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
 @Composable
 fun BadeAppBottomAppBar(navcontroller: NavController, screen: Screen?) {
     val items = listOf(
-        Screen.Search,
         Screen.Home,
+        Screen.Search,
         Screen.Favorites,
-        Screen.Settings
     )
 
     var selectedItem by remember { mutableIntStateOf(items.indexOf(screen)) }
@@ -58,45 +67,31 @@ fun BadeAppBottomAppBar(navcontroller: NavController, screen: Screen?) {
         NavigationBar {
             items.forEachIndexed { index, item ->
                 NavigationBarItem(
-                    icon = { Icon(item.icon, contentDescription = item.label) },
-                    label = { Text(item.label) },
+                    icon = {
+                        if (selectedItem == index) {
+                            Icon(item.iconFilled, contentDescription = item.description)
+                        } else {
+                            Icon(item.iconOutlined, contentDescription = item.description)
+                        }
+                    },
+                    label = {
+                        Text(
+                            text = item.label,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
                     selected = selectedItem == index,
                     alwaysShowLabel = false,
                     onClick = {
                         selectedItem = index
-                        navcontroller.navigate(item.route) {
-                            if (item == Screen.Home) {
-                                popUpTo(item.route)
-                                launchSingleTop = true
-                                restoreState = true
-                            }
+                        navcontroller.navigate(item.navigationTarget) {
+                            popUpTo(item.navigationTarget)
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     }
                 )
             }
         }
-        /*for (i in 1..4) {
-            IconButton(
-                onClick = {
-                    if (i == 2) navcontroller.navigate("search")
-                    if (i == 3) navcontroller.navigate("home") {
-                        popUpTo("home")
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                    if (i == 4) navcontroller.navigate("favorites")
-                },
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(100.dp)
-            ) {
-                when (i) {
-                    1 -> Icon(Icons.Filled.Settings, contentDescription = "Instillinger")
-                    2 -> Icon(Icons.Filled.Search, contentDescription = "Søk")
-                    3 -> Icon(Icons.Filled.LocationOn, contentDescription = "Kart")
-                    4 -> Icon(Icons.Filled.Star, contentDescription = "Favoritter")
-                }
-            }
-        }*/
     }
 }
