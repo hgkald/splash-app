@@ -4,11 +4,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -36,6 +35,7 @@ sealed class Screen(
         iconFilled = Icons.Default.LocationOn,
         iconOutlined = Icons.Outlined.LocationOn
     )
+
     object Search : Screen(
         navigationTarget = "search",
         label = "Søk",
@@ -43,6 +43,7 @@ sealed class Screen(
         iconFilled = Icons.Default.Search,
         iconOutlined = Icons.Outlined.Search,
     )
+
     object Favorites : Screen(
         navigationTarget = "favorites",
         label = "Favoritter",
@@ -84,9 +85,11 @@ fun BadeAppBottomAppBar(navcontroller: NavController, screen: Screen?) {
                     alwaysShowLabel = false,
                     onClick = {
                         navcontroller.navigate(item.navigationTarget) {
-                            popUpTo(item.navigationTarget)
-                            launchSingleTop = true
-                            restoreState = true
+                            if (item.navigationTarget == "home") {
+                                popUpTo(item.navigationTarget)
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
                         selectedItem = index
                     }
