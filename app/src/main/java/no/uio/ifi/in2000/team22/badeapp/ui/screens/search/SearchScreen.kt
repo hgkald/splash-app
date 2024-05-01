@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,22 +32,27 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -73,7 +80,7 @@ import no.uio.ifi.in2000.team22.badeapp.ui.components.Screen
 import no.uio.ifi.in2000.team22.badeapp.ui.components.swimspot.SwimspotCard
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SearchScreen(
     navcontroller: NavController,
@@ -81,6 +88,9 @@ fun SearchScreen(
 ) {
     val focusManager = LocalFocusManager.current
     val scrollState: LazyListState = rememberLazyListState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     val searchUiState by searchScreenViewModel.searchUiState.collectAsState()
     val locationUiState = searchScreenViewModel.locationUiState.collectAsState()
@@ -181,97 +191,161 @@ fun SearchScreen(
 
     )
     {
-        Column(modifier = Modifier.padding(it)) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                val header = if (input == "") {
-                    "Finn badeplasser"
-                } else {
-                    "Søkeresultater"
-                }
-                Text(
-                    text = header,
-                    style = MaterialTheme.typography.titleLarge,
-                    overflow = TextOverflow.Ellipsis,
+        //Column(modifier = Modifier.padding(it)) {
+        LazyColumn(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.Start,
+            state = scrollState,
+            modifier = Modifier
+                .padding(it)
+                .padding(12.dp)
+        ) {
+            item {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .padding(start = 16.dp)
-                        .fillMaxWidth(0.5f)
-                )
-
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 72.dp),
-                    modifier = Modifier.widthIn(min = 72.dp, max = 200.dp).padding(4.dp)
+                        .fillMaxWidth()
                 ) {
-                    val filterChipModifier = Modifier.padding(2.dp)
+                    val header = if (input == "") {
+                        "Finn badeplasser"
+                    } else {
+                        "Søkeresultater"
+                    }
+                    Text(
+                        text = header,
+                        style = MaterialTheme.typography.titleLarge,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .padding(start = 16.dp)
+                            .fillMaxWidth(0.5f)
+                    )
 
-                    @Composable
-                    fun FilterChipText(text: String) {
-                        Text(
-                            text = text,
-                            textAlign = TextAlign.Center,
-                            overflow = TextOverflow.Visible,
-                            style = MaterialTheme.typography.labelMedium
+                    OutlinedButton(
+                        onClick = { showBottomSheet = true },
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         )
+                        {
+                            Text("Filter")
+                            Icon(Icons.Default.ArrowDropDown, "Åpne filter")
+                        }
                     }
-                    item {
-                        FilterChip(
-                            onClick = { freshwaterOnly = !freshwaterOnly },
-                            label = { FilterChipText(text = "Ferskvann") },
-                            selected = freshwaterOnly,
-                            modifier = filterChipModifier
-                        )
-                    }
-                    item {
-                        FilterChip(
-                            onClick = { saltwaterOnly = !saltwaterOnly },
-                            label = { FilterChipText(text = "Saltvann") },
-                            selected = saltwaterOnly,
-                            modifier = filterChipModifier
-                        )
-                    }
+
                 }
             }
 
-            LazyColumn(
+            item {
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+
+            items(visibleSwimspots) { swimspot ->
+                var isFavorite = favorites.contains(Favorite(swimspot.id))
+                val toggleFavorite =
+                    if (favorites.isEmpty() || !isFavorite) {
+                        {
+                            searchScreenViewModel.addFavorite(swimspot.id)
+                            isFavorite = !isFavorite
+                        }
+                    } else {
+                        {
+                            searchScreenViewModel.removeFavorite(swimspot.id)
+                            isFavorite = !isFavorite
+                        }
+                    }
+                val onFavoriteClick: () -> Unit = { toggleFavorite() }
+
+                Log.d("SearchScreen", "resultscard")
+
+                if (swimspot.name.startsWith(input, ignoreCase = true)) {
+                    SwimspotCard(
+                        navcontroller = navcontroller,
+                        swimspot = swimspot,
+                        isFavorite = isFavorite,
+                        onFavoriteClick = onFavoriteClick
+                    )
+                }
+            }
+        }
+    }
+
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                showBottomSheet = false
+            },
+            sheetState = sheetState,
+        ) {
+            @Composable
+            fun FilterChipText(text: String) {
+                Text(
+                    text = text,
+                    textAlign = TextAlign.Center,
+                    overflow = TextOverflow.Visible,
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+            val filterChipModifier = Modifier.padding(horizontal = 2.dp)
+
+            Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start,
-                state = scrollState,
-                modifier = Modifier
-                    .padding(12.dp)
+                modifier = Modifier.padding(24.dp)
             ) {
+                Text(
+                    text = "Vanntype",
+                    style = MaterialTheme.typography.titleMedium,
+                )
 
-                item {
-                    Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    FilterChip(
+                        onClick = { freshwaterOnly = !freshwaterOnly },
+                        label = { FilterChipText(text = "Ferskvann") },
+                        selected = freshwaterOnly,
+                        modifier = filterChipModifier
+                    )
+                    FilterChip(
+                        onClick = { saltwaterOnly = !saltwaterOnly },
+                        label = { FilterChipText(text = "Saltvann") },
+                        selected = saltwaterOnly,
+                        modifier = filterChipModifier
+                    )
                 }
 
-                items(visibleSwimspots) { swimspot ->
-                    var isFavorite = favorites.contains(Favorite(swimspot.id))
-                    val toggleFavorite =
-                        if (favorites.isEmpty() || !isFavorite) {
-                            {
-                                searchScreenViewModel.addFavorite(swimspot.id)
-                                isFavorite = !isFavorite
-                            }
-                        } else {
-                            {
-                                searchScreenViewModel.removeFavorite(swimspot.id)
-                                isFavorite = !isFavorite
-                            }
-                        }
-                    val onFavoriteClick: () -> Unit = { toggleFavorite() }
+                Spacer(modifier = Modifier.height(12.dp))
 
-                    Log.d("SearchScreen", "resultscard")
-
-                    if (swimspot.name.startsWith(input, ignoreCase = true)) {
-                        SwimspotCard(
-                            navcontroller = navcontroller,
-                            swimspot = swimspot,
-                            isFavorite = isFavorite,
-                            onFavoriteClick = onFavoriteClick
+                Text(
+                    text = "Fasiliteter",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                val facilities = listOf(
+                    "Toaletter",
+                    "Kiosk",
+                    "Parkeringsplass",
+                    "Strand",
+                    "Svaberg",
+                    "Stupetårn",
+                    "Brygge"
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    facilities.forEach {
+                        FilterChip(
+                            onClick = { },
+                            label = { FilterChipText(text = it)},
+                            selected = false,
+                            modifier = filterChipModifier
                         )
                     }
                 }
