@@ -1,8 +1,6 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.components.favorites
 
-
 import android.util.Log
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -13,28 +11,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.runtime.Composable
-
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-
 import androidx.lifecycle.viewmodel.compose.viewModel
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavUiState
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreenViewModel
 
-import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
-import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
-
-
 @Composable
 fun FavoriteButton(
     swimspot: Swimspot,
-
     favoritesList: List<Swimspot>,
     modifier: Modifier = Modifier,
     toggleFavorite : () -> Unit,
@@ -42,15 +32,6 @@ fun FavoriteButton(
     if (favoritesList.isEmpty()){
         FavoriteButtonOutlined(onClick = toggleFavorite, modifier = modifier)
     } else if (swimspot in favoritesList){
-
-    favoritesList: List<Swimspot?>,
-    modifier: Modifier = Modifier,
-    toggleFavorite: () -> Unit,
-){
-    if (favoritesList.isEmpty()){
-        FavoriteButtonOutlined(onClick = toggleFavorite, modifier = modifier)
-    } else if (favoritesList.contains(swimspot)){
-
         FavoriteButtonFilled(onClick = toggleFavorite, modifier = modifier)
     } else {
         FavoriteButtonOutlined(onClick = toggleFavorite, modifier = modifier)

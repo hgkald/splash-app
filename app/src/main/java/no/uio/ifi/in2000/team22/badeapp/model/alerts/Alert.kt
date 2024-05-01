@@ -1,9 +1,6 @@
 package no.uio.ifi.in2000.team22.badeapp.model.alerts
 
-import java.time.Instant
-
 enum class RiskMatrixColor(val norsk: String) {
-    Green("Grønt"),
     Yellow("Gult"),
     Orange ("Oransje"),
     Red("Rødt")
@@ -19,7 +16,6 @@ data class Alert(
     val description : String,
     val event: String,
     val eventAwarenessName : String,
-    val eventEndingTime: Instant,
     val instruction : String,
     val severity : String,
     val title : String,

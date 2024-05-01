@@ -1,5 +1,4 @@
 package no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi
-
 import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -11,8 +10,8 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import io.ktor.serialization.gson.gson
 import no.uio.ifi.in2000.team22.badeapp.data.MetAPI
-import no.uio.ifi.in2000.team22.badeapp.model.forecast.Locationforecast
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
+import no.uio.ifi.in2000.team22.badeapp.model.forecast.Locationforecast
 
 class LocationforecastDataSource {
     private val client =
@@ -36,10 +35,9 @@ class LocationforecastDataSource {
             val response = client.get {
                 url {
                     parameters.append("lat", lat.toString())
-                    parameters.append("lon", lon.toString())
+                    parameters.append("lon",lon.toString())
                 }
             }
-            Log.e("LocationforecastDataSource", "Fetching new location forecast")
             response.body<Locationforecast>()
         } catch (e: Exception) {
             Log.e("LocationforecastDataSource", e.message.toString())
@@ -48,15 +46,13 @@ class LocationforecastDataSource {
         }
     }
 
-    suspend fun fetchWeather(lat: Double, lon: Double, hourOffset: Int = 0): Weather {
+    suspend fun fetchWeather(lat: Double, lon: Double, hourOffset:Int = 0) : Weather {
         //Returns a Weather object based in the current time
         // lat and lon: latitude and longitude
         // hourOffset: Weather this many hours into the future.
         if (hourOffset > 54) {
-            Log.w(
-                "LocationforecastDataSource",
-                "fetchWeather() might return null Weather parameters (hourOffset > 54)"
-            )
+            Log.w("LocationforecastDataSource",
+                "fetchWeather() might return null Weather parameters (hourOffset > 54)")
         }
 
         try {
@@ -71,7 +67,8 @@ class LocationforecastDataSource {
                 uvIndex = timeseries?.data?.instant?.details?.ultraviolet_index_clear_sky,
                 precipitationNextHour = timeseries?.data?.next_1_hours?.details?.precipitation_amount
             )
-        } catch (e: Exception) {
+        }
+        catch (e: Exception) {
             Log.e("LocationforecastDataSource", e.message.toString())
             Log.e("LocationforecastDataSource", e.stackTrace.toString())
             return Weather(
