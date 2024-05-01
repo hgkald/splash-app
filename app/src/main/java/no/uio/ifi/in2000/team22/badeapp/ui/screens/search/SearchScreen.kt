@@ -330,10 +330,6 @@ fun SearchScreen(
                     "Toaletter",
                     "Kiosk",
                     "Parkeringsplass",
-                    "Strand",
-                    "Svaberg",
-                    "Stupetårn",
-                    "Brygge"
                 )
                 FlowRow(
                     horizontalArrangement = Arrangement.Center,
@@ -349,7 +345,37 @@ fun SearchScreen(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "Badeplass",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                val badeplass = listOf(
+                    "Strand",
+                    "Svaberg",
+                    "Stupetårn",
+                    "Brygge"
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    badeplass.forEach {
+                        FilterChip(
+                            onClick = { },
+                            label = { FilterChipText(text = it)},
+                            selected = false,
+                            modifier = filterChipModifier
+                        )
+                    }
+                }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
         }
     }
 }
