@@ -1,5 +1,7 @@
 package no.uio.ifi.in2000.team22.badeapp.data.favorites
 
+
+/*
 import android.util.Log
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 
@@ -28,4 +30,8 @@ class FavoritesListRepository{
         return favList.toMutableList()
     }
 
+
 }
+
+}*/
+

@@ -14,39 +14,41 @@ import io.ktor.serialization.gson.gson
 import no.uio.ifi.in2000.team22.badeapp.data.MetAPI
 import no.uio.ifi.in2000.team22.badeapp.model.alerts.Alert
 import no.uio.ifi.in2000.team22.badeapp.model.alerts.RiskMatrixColor
+import java.time.ZonedDateTime
 
 private data class MetAlert(
-    val features : List<Feature>,
-    val lang : String,
-    val lastChange : String
+    val features: List<Feature>,
+    val lang: String,
+    val lastChange: String
 ) {
     data class Feature(
         val properties: Properties,
         val geometry: Geometry,
-        @SerializedName("when") val timeFrame : TimeFrame,
+        @SerializedName("when") val timeFrame: TimeFrame,
     ) {
         data class Properties(
-            val area : String,
-            val awarenessResponse : String,
-            val awarenessLevel : String,
-            val certainty : String,
-            val consequences : String,
-            val description : String,
-            val event : String,
-            val eventAwarenessName : String,
-            val instruction : String,
-            val severity : String,
-            val title : String,
-            val riskMatrixColor : RiskMatrixColor
+            val area: String,
+            val awarenessResponse: String,
+            val awarenessLevel: String,
+            val certainty: String,
+            val consequences: String,
+            val description: String,
+            val event: String,
+            val eventAwarenessName: String,
+            val eventEndingTime: String,
+            val instruction: String,
+            val severity: String,
+            val title: String,
+            val riskMatrixColor: RiskMatrixColor
         )
 
         data class Geometry(
-            val type : String,
-            val coordinates : Any
+            val type: String,
+            val coordinates: Any
         )
 
         data class TimeFrame(
-            val interval : List<String>
+            val interval: List<String>
         )
     }
 }
@@ -76,10 +78,11 @@ class MetAlertDataSource {
     private suspend fun fetchBody(): MetAlert {
         return try {
             val response = client.get(endpoint)
+            Log.d("MetAlertDataSource", "Fetching new alerts ")
             response.body<MetAlert>()
         } catch (e: Exception) {
             Log.d("MetAlertDataSource", e.message.toString())
-            Log.d("MetAlertDataSource", e.stackTrace.toString())
+            Log.d("MetAlertDataSource", e.stackTrace.contentToString())
             MetAlert(
                 features = emptyList(),
                 lang = "",
@@ -88,39 +91,41 @@ class MetAlertDataSource {
         }
     }
 
-    private fun toAlerts(metAlert: MetAlert) : List<Alert>{
-        val list : List<Alert> = //emptyList()
-        metAlert.features.map{
-            Alert(
-                geographicArea = if (it.geometry.type.lowercase() == "polygon"){ // Type is Polygon
-                    mutableListOf(it.geometry.coordinates as List<List<Double>>)
-                } else { // Type is MultiPolygon
-                    it.geometry.coordinates as List<List<List<Double>>>
-                },
-                areaName = it.properties.area,
-                awarenessResponse = it.properties.awarenessResponse,
-                awarenessLevel = it.properties.awarenessLevel,
-                certainty = it.properties.certainty,
-                consequences = it.properties.consequences,
-                description = it.properties.description,
-                event = it.properties.event,
-                eventAwarenessName = it.properties.eventAwarenessName,
-                instruction = it.properties.instruction,
-                severity = it.properties.severity,
-                title = it.properties.title,
-                timeFrame = listOf(it.timeFrame.interval[0], it.timeFrame.interval[1]),
-                riskMatrixColor = it.properties.riskMatrixColor,
-                lastChange = metAlert.lastChange,
-            )
-        }
+    private fun toAlerts(metAlert: MetAlert): List<Alert> {
+        val list: List<Alert> =
+            metAlert.features.map {
+                Alert(
+                    geographicArea = if (it.geometry.type.lowercase() == "polygon") { // Type is Polygon
+                        mutableListOf(it.geometry.coordinates as List<List<Double>>)
+                    } else { // Type is MultiPolygon
+                        it.geometry.coordinates as List<List<List<Double>>>
+                    },
+                    areaName = it.properties.area,
+                    awarenessResponse = it.properties.awarenessResponse,
+                    awarenessLevel = it.properties.awarenessLevel,
+                    certainty = it.properties.certainty,
+                    consequences = it.properties.consequences,
+                    description = it.properties.description,
+                    event = it.properties.event,
+                    eventAwarenessName = it.properties.eventAwarenessName,
+                    eventEndingTime = ZonedDateTime.parse(it.properties.eventEndingTime)
+                        .toInstant(),
+                    instruction = it.properties.instruction,
+                    severity = it.properties.severity,
+                    title = it.properties.title,
+                    timeFrame = listOf(it.timeFrame.interval[0], it.timeFrame.interval[1]),
+                    riskMatrixColor = it.properties.riskMatrixColor,
+                    lastChange = metAlert.lastChange,
+                )
+            }
         return list
     }
 
-    suspend fun fetchAlerts() : List<Alert>{
+    suspend fun fetchAlerts(): List<Alert> {
         return toAlerts(fetchBody())
     }
 
-    suspend fun fetchAlertsForPosition(lat : Double, long : Double) : List<Alert> {
+    suspend fun fetchAlertsForPosition(lat: Double, long: Double): List<Alert> {
         try {
             val response = client.get {
                 url {
@@ -130,29 +135,27 @@ class MetAlertDataSource {
                 }
             }
             val body = response.body<MetAlert>()
+            Log.d("MetAlertDataSource", "Fetching new alerts ")
             return toAlerts(body)
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             Log.d("MetAlertDataSource", e.message.toString())
-            Log.d("MetAlertDataSource", e.stackTrace.toString())
+            Log.d("MetAlertDataSource", e.stackTrace.contentToString())
             return emptyList()
         }
     }
 
-    suspend fun fetchLastChanged() : String{
+    suspend fun fetchLastChanged(): String {
         return fetchBody().lastChange
     }
 }
 
 
-
-
 // Main function for testing the code along the way
-suspend fun main(){
+suspend fun main() {
     val data = MetAlertDataSource()
     val info = data.fetchAlerts()
 
-    info.forEach{
+    info.forEach {
         println(it.areaName)
         println(it.description)
         println(it.riskMatrixColor)
