@@ -1,261 +1,118 @@
 package no.uio.ifi.in2000.team22.badeapp.ui.screens.swimspot
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import no.uio.ifi.in2000.team22.badeapp.R
-import no.uio.ifi.in2000.team22.badeapp.model.uv.UV
+import no.uio.ifi.in2000.team22.badeapp.model.forecast.WaterTemperature
 import no.uio.ifi.in2000.team22.badeapp.model.uv.doubleToUV
 import no.uio.ifi.in2000.team22.badeapp.model.uv.uvToNorwegian
 import no.uio.ifi.in2000.team22.badeapp.ui.components.loading.LoadingIndicator
-import kotlin.math.roundToInt
+import java.time.Duration
+import java.time.Instant
 
 @Preview(showSystemUi = true)
 @Composable
 fun WeatherOverviewPreview() {
     WeatherOverview(
-        waterTemp = 20.0,
+        waterTemp = WaterTemperature(20.0, Instant.now()),
         airTemp = 21.0,
-        uvIndex = 2.0,
+        uvIndex = 3.0,
+        precipitation = 0.5,
         weatherIcon = R.drawable.partlycloudy_day
     )
 }
 
 @Composable
 fun WeatherOverview(
-    waterTemp: Double?,
+    waterTemp: WaterTemperature?,
     airTemp: Double?,
     uvIndex: Double?,
+    precipitation: Double?,
     @DrawableRes weatherIcon: Int?,
 ) {
-    Column(
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        state = rememberLazyGridState(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier
-            .width(400.dp)
+            .sizeIn(maxHeight = 600.dp)
+            .fillMaxWidth()
     ) {
-        Content(
-            waterTemp = waterTemp,
-            airTemp = airTemp,
-            uvIndex = uvIndex,
-            weatherIcon = weatherIcon
-        )
-    }
-}
+        item(span = {
+            GridItemSpan(maxLineSpan)
+        }) {
+            WaterTempInfo(temperature = waterTemp)
+        }
+
+        if (airTemp != null && uvIndex != null && precipitation != null) {
+            val uv = doubleToUV(uvIndex)
+            val textWeatherValues = listOf(
+                Pair("${airTemp}°", "Luftemperatur"),
+                Pair("${uvIndex}", "${uvToNorwegian(uv)} UV-nivå"),
+                Pair("${precipitation}mm", "Nedbør neste timen")
+            )
 
 
-/**
- * Main content for [WeatherOverview]. Containts the main weather info.
- */
+            item(span = {
+                GridItemSpan(1)
+            }) {
+                InfoCardImage(
+                    id = R.drawable.partlycloudy_day,
+                    contentDescription = "partlycloudy day",
+                    label = "Værforhold"
+                )
+            }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun Content(
-    waterTemp: Double?,
-    airTemp: Double?,
-    uvIndex: Double?,
-    @DrawableRes weatherIcon: Int?,
-
-    ) {
-    val showDialogStateUV = remember { mutableStateOf(false) }
-    val uvValue = if (uvIndex != null) {
-        doubleToUV(uvIndex)
-    } else {
-        UV.UNKNOWN
-    }
-
-    Text(
-        text = "Vær og temperatur",
-        style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(bottom = 9.dp)
-    )
-    Divider(
-        modifier = Modifier.padding(bottom = 9.dp)
-    )
-    WideInfoCard {
-        if (waterTemp == null) {
-            LoadingIndicator(onErrorText = "Kunne ikke hente temperaturen i vannet")
+            textWeatherValues.map {
+                item(span = { GridItemSpan(1) }
+                ) {
+                    InfoCard(text = it.first, label = it.second)
+                }
+            }
         } else {
+            item(span = {
+                GridItemSpan(maxLineSpan)
+            }) {
+                WideInfoCard {
+                    LoadingIndicator(onErrorText = "Kunne ikke hente værinformasjon for badestedet")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun WaterTempInfo(temperature: WaterTemperature?) {
+    LargeInfoCard {
+        if (temperature != null) {
             Text(
-                text = "${waterTemp.roundToInt()}° i vannet",
-                style = MaterialTheme.typography.displayMedium
+                text = "${temperature.temperature}° i vannet",
+                style = MaterialTheme.typography.headlineLarge,
+                textAlign = TextAlign.Center
             )
-        }
-    }
 
-    if ((airTemp == null) || (uvIndex == null) || (weatherIcon == null)) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(160.dp)
-                .padding(top = 12.dp)
-        ) {
-            LoadingIndicator(
-                onErrorText = "Kunne ikke hente værinformasjon for badestedet"
+            val timeSince = Duration.between(temperature.time, Instant.now()).toDays()
+            Text(
+                text = "Sist målt $timeSince dager siden",
+                style = MaterialTheme.typography.bodySmall
             )
+        } else {
+            LoadingIndicator(onErrorText = "Ingen registrerte badetemperaturer for dette badestedet")
         }
-    } else {
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp)
-        ) {
 
-            //Shows the current weather as a drawable
-            if (weatherIcon != null) {
-                SmallInfoCard(
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = weatherIcon),
-                        contentDescription = weatherIcon.toString(),
-                    )
-                    Text(
-                        text = "Værforhold",
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                }
-            }
-
-            //Shows current air temperature
-            SmallInfoCard(
-                verticalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Text(
-                    text = "${airTemp?.roundToInt()}°",
-                    style = MaterialTheme.typography.displayMedium,
-                )
-                Text(
-                    text = "Lufttemperatur",
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier
-                )
-            }
-
-            //Shows UV-index and a color based on said value
-            SmallInfoCard(
-                verticalArrangement = Arrangement.SpaceEvenly,
-                clickable = true,
-                onClick = { showDialogStateUV.value = true },
-            ) {
-                Text(
-                    text = "${uvIndex?.roundToInt()}",
-                    style = MaterialTheme.typography.displayMedium,
-
-                    )
-                Text(
-                    text = "${uvToNorwegian(uvValue)} UV-nivå",
-                    style = MaterialTheme.typography.labelSmall,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                )
-            }
-        }
-    }
-    Divider(
-        modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
-    )
-    if (showDialogStateUV.value) {
-        Dialog(
-            onDismissRequest = { showDialogStateUV.value = false },
-            properties = DialogProperties(dismissOnClickOutside = true)
-        ) {
-            Surface(
-//                color = Color.White,
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(text = "UV-Indeks:", style = MaterialTheme.typography.titleLarge)
-                    Text(text = "Lav: 1-2", style = MaterialTheme.typography.bodyLarge)
-                    Text(text = "Moderat: 3-5", style = MaterialTheme.typography.bodyLarge)
-                    Text(text = "Sterk: 6-7", style = MaterialTheme.typography.bodyLarge)
-                    Text(text = "Svært sterk: 8-10", style = MaterialTheme.typography.bodyLarge)
-                    Text(text = "Ekstrem: 11+", style = MaterialTheme.typography.bodyLarge)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SmallInfoCard(
-    modifier: Modifier = Modifier,
-    verticalArrangement: Arrangement.Vertical,
-    clickable: Boolean = false,
-    onClick: () -> Unit = {},
-    content: @Composable () -> Unit
-) {
-
-    Card(
-        modifier = modifier
-            .size(110.dp)
-            .clickable(enabled = clickable, onClick = onClick)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            Column(
-                verticalArrangement = verticalArrangement,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                content()
-            }
-        }
-    }
-
-}
-
-
-@Composable
-fun WideInfoCard(
-    content: @Composable () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .height(110.dp)
-    ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-        ) {
-            content()
-        }
     }
 }

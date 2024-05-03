@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization") version "1.9.21"
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -10,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "no.uio.ifi.in2000.team22.badeapp"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -18,6 +19,9 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+        testOptions {
+            unitTests.isReturnDefaultValues = true;
         }
     }
 
@@ -58,6 +62,7 @@ dependencies {
         val NAVIGATION = "2.7.7"
         val GOOGLE_PLAY_SERVICES = "21.2.0"
         val ACCOMPANIST = "0.32.0" //do not change this unless Compose version is changed!!!!
+        val ROOM = "2.6.1"
     }
 
     implementation("androidx.core:core-ktx:1.12.0")
@@ -91,6 +96,9 @@ dependencies {
     //mapbox
     implementation("com.mapbox.maps:android:${versions.MAPBOX}")
     implementation("com.mapbox.extension:maps-compose:${versions.MAPBOX}")
+    implementation("com.mapbox.mapboxsdk:mapbox-sdk-services:6.15.0")
+    implementation("com.mapbox.mapboxsdk:mapbox-sdk-core:6.15.0")
+    implementation("androidx.annotation:annotation:1.7.1")
 
     //Navigation
     implementation("androidx.navigation:navigation-fragment-ktx:${versions.NAVIGATION}")
@@ -105,4 +113,12 @@ dependencies {
     */
     //noinspection GradleDependency
     implementation("com.google.accompanist:accompanist-permissions:${versions.ACCOMPANIST}")
+
+    //Room - Jetpack database library
+    implementation("androidx.room:room-runtime:${versions.ROOM}")
+    annotationProcessor("androidx.room:room-compiler:${versions.ROOM}")
+    implementation("androidx.room:room-ktx:2.6.1")
+    // To use Kotlin Symbol Processing (KSP)
+    ksp("androidx.room:room-compiler:${versions.ROOM}")
+
 }
