@@ -8,5 +8,6 @@ data class Swimspot(
     val lat: Double,
     val municipality: String,
     val county: String,
-    val searchWords: List<String> = emptyList()
+    val searchWords: List<String> = emptyList(),
+    var distance: Float? = null
 )

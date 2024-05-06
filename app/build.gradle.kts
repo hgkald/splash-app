@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization") version "1.9.21"
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -61,6 +62,7 @@ dependencies {
         val NAVIGATION = "2.7.7"
         val GOOGLE_PLAY_SERVICES = "21.2.0"
         val ACCOMPANIST = "0.32.0" //do not change this unless Compose version is changed!!!!
+        val ROOM = "2.6.1"
     }
 
     implementation("androidx.core:core-ktx:1.12.0")
@@ -111,4 +113,12 @@ dependencies {
     */
     //noinspection GradleDependency
     implementation("com.google.accompanist:accompanist-permissions:${versions.ACCOMPANIST}")
+
+    //Room - Jetpack database library
+    implementation("androidx.room:room-runtime:${versions.ROOM}")
+    annotationProcessor("androidx.room:room-compiler:${versions.ROOM}")
+    implementation("androidx.room:room-ktx:2.6.1")
+    // To use Kotlin Symbol Processing (KSP)
+    ksp("androidx.room:room-compiler:${versions.ROOM}")
+
 }

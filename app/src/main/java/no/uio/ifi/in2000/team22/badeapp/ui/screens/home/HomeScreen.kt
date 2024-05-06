@@ -57,6 +57,7 @@ import com.mapbox.maps.plugin.scalebar.generated.ScaleBarSettings
 import no.uio.ifi.in2000.team22.badeapp.R
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppTopAppBar
+import no.uio.ifi.in2000.team22.badeapp.ui.components.Screen
 import no.uio.ifi.in2000.team22.badeapp.ui.components.mapElements.PanToHomeButton
 import no.uio.ifi.in2000.team22.badeapp.ui.components.mapElements.PanToLocationButton
 import no.uio.ifi.in2000.team22.badeapp.ui.components.mapElements.WeatherInfoButton
@@ -118,8 +119,7 @@ fun HomeScreen(
 
 
     Scaffold(
-        topBar = { BadeAppTopAppBar() },
-        bottomBar = { BadeAppBottomAppBar(navcontroller) },
+        bottomBar = { BadeAppBottomAppBar(navcontroller, Screen.Home) },
         floatingActionButton = {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

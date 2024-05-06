@@ -1,11 +1,14 @@
 package no.uio.ifi.in2000.team22.badeapp.data.swimspots
 
 import android.content.Context
+import android.location.Location
+import android.util.Log
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 
 class SwimspotsRepository(private val context: Context) {
     private val datasource = SwimspotsDataSource
     private var swimspots = emptyList<Swimspot>()
+    private var swimspotsDistanceFrom: Pair<Double, Double>? = null
 
     /**
      * Gets a list of all swimspots from [SwimspotsDataSource]. This runs disk IO, and should use Dispatchers.IO
@@ -33,5 +36,68 @@ class SwimspotsRepository(private val context: Context) {
         } catch (e: Exception) {
             null
         }
+    }
+
+    /**
+     * Returns true if distance parameter in swimspots are calculated from a certain point
+     */
+    fun swimspotshaveDistance(): Boolean {
+        return swimspotsDistanceFrom != null
+    }
+
+    /**
+     * Calculates distances from latitude and longitude to each swimspot.
+     *
+     * @param latitude
+     * @param longitude
+     */
+    fun calculateDistancesFrom(
+        latitude: Double,
+        longitude: Double,
+    ){
+        try {
+            swimspots
+                .map {
+                    val results: FloatArray = floatArrayOf(0F)
+                    Location.distanceBetween(latitude, longitude, it.lat, it.lon, results)
+
+                    it.distance = results.first()
+                    it
+                }
+            swimspotsDistanceFrom = Pair(latitude, longitude)
+        } catch (e: Exception) {
+            Log.d("SwimspotsRepo", "Exception at getNearestSwimspots()")
+            swimspotsDistanceFrom = null
+        }
+    }
+
+    /**
+     * Return the x nearest swimspots from a given point. Calculates distance if not already done
+     *
+     * @param latitude
+     * @param longitude
+     * @param limit the max amount if swimspots returned, default is size of [swimspots]
+     */
+    fun getNearestSwimspots(
+        latitude: Double,
+        longitude: Double,
+        limit: Int = swimspots.size
+    ): List<Swimspot> {
+        if (!swimspotshaveDistance()) {
+            calculateDistancesFrom(latitude, longitude)
+        }
+        val swimspotsSorted = try {
+            swimspots
+                .sortedBy {
+                    it.distance
+                }.subList(0, limit - 1)
+        } catch (e: Exception) {
+            Log.d("SwimspotsRepo", "Exception at getNearestSwimspots()")
+            swimspots
+                .subList(0, limit - 1)
+        }
+        Log.d("SwimspotsRepo", "Returning list of nearest swimspots: ${swimspotsSorted.size}")
+
+        return swimspotsSorted
     }
 }

@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import no.uio.ifi.in2000.team22.badeapp.data.enTur.EnTurRepository
+import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesRepository
 import no.uio.ifi.in2000.team22.badeapp.data.frostApi.FrostRepository
 import no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi.LocationforecastDataSource
 import no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi.LocationforecastRepository
@@ -24,49 +26,60 @@ import no.uio.ifi.in2000.team22.badeapp.model.forecast.WaterTemperature
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimspotType
+import no.uio.ifi.in2000.team22.badeapp.model.transport.TransportCategory
+import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 
 data class SwimspotUiState(
-    val swimspot: Swimspot? = null
+    val swimspot: Swimspot? = null,
+    val isFavorite: Boolean = false
 )
 
 data class WeatherUiState(
     val alerts: List<Alert> = listOf(),
     val weather: Weather? = null,
-    val water: WaterTemperature? = null
+    val water: WaterTemperature? = null,
+)
+
+data class TransportUiState(
+    val stops: List<TransportCategory> = emptyList()
 )
 
 class SwimspotViewModel(
     savedStateHandle: SavedStateHandle,
-    swimspotsRepository: SwimspotsRepository
+    swimspotsRepository: SwimspotsRepository,
+    val favoritesRepository: FavoritesRepository
 ) : ViewModel() {
     private val swimspotId: String = checkNotNull(savedStateHandle.get<String>("swimspotId"))
 
     private val _swimspotUiState = MutableStateFlow(SwimspotUiState())
     private val _weatherUiState = MutableStateFlow(WeatherUiState())
+    private val _transportUiState = MutableStateFlow(TransportUiState())
 
     val swimSpotUiState: StateFlow<SwimspotUiState> = _swimspotUiState.asStateFlow()
     val weatherUiState: StateFlow<WeatherUiState> = _weatherUiState.asStateFlow()
-
+    val transportUiState: StateFlow<TransportUiState> = _transportUiState.asStateFlow()
 
     private val alertRepo = MetAlertRepository()
     private val weatherRepo = LocationforecastRepository(LocationforecastDataSource())
     private val oceanRepo = OceanforecastRepository(OceanforecastDataSource())
     private val frostRepo = FrostRepository()
+    private val enturRepo = EnTurRepository()
 
     init {
         viewModelScope.launch {
+            Log.d("SwimspotViewModel", "Updating swimspot ui state")
             _swimspotUiState.update {
-                Log.d("SwimspotViewModel", "Updating swimspot ui state")
-                val swimspot = swimspotsRepository.getSwimspotById(swimspotId)
                 it.copy(
-                    swimspot = swimspot
+                    swimspot = swimspotsRepository.getSwimspotById(swimspotId),
+                    isFavorite = favoritesRepository.isFavorite(swimspotId.toInt())
                 )
             }
+            Log.d("SwimspotViewModel", _swimspotUiState.value.isFavorite.toString())
+
+            val swimspot = _swimspotUiState.value.swimspot ?: return@launch
 
             _weatherUiState.update {
-                val swimspot = _swimspotUiState.value.swimspot ?: return@update WeatherUiState()
                 frostRepo.fetchWaterTemperature(swimspot.lat, swimspot.lon)
-
 
                 it.copy(
                     alerts = alertRepo.getAlertsForPosition(
@@ -90,19 +103,54 @@ class SwimspotViewModel(
                     }
                 )
             }
+
+            _transportUiState.update { state ->
+                state.copy(
+                    stops = enturRepo.getAvailableTransportCategories(
+                        lat = swimspot.lat,
+                        lon = swimspot.lon,
+                        radius = 2,
+                        size = 10
+                    )
+                )
+            }
+
+        }
+    }
+
+    fun addFavorite(id: Int) = viewModelScope.launch {
+        Log.i("SwimspotViewModel", "Adding favorite: $id")
+        favoritesRepository.insert(id)
+        _swimspotUiState.update {
+            it.copy(
+                isFavorite = favoritesRepository.isFavorite(swimspotId.toInt())
+            )
+        }
+    }
+
+    fun removeFavorite(id: Int) = viewModelScope.launch {
+        Log.i("SwimspotViewModel", "Removing favorite: $id")
+        favoritesRepository.delete(id)
+        _swimspotUiState.update {
+            it.copy(
+                isFavorite = favoritesRepository.isFavorite(swimspotId.toInt())
+            )
         }
     }
 
     @Suppress("UNCHECKED_CAST")
     companion object {
-        fun provideFactory(swimspotsRepository: SwimspotsRepository): ViewModelProvider.Factory =
+        fun provideFactory(
+            swimspotsRepository: SwimspotsRepository,
+            favoritesRepository: FavoritesRepository
+        ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(
                     modelClass: Class<T>,
                     extras: CreationExtras
                 ): T {
                     val savedStateHandle = extras.createSavedStateHandle()
-                    return SwimspotViewModel(savedStateHandle, swimspotsRepository) as T
+                    return SwimspotViewModel(savedStateHandle, swimspotsRepository, favoritesRepository) as T
                 }
             }
     }

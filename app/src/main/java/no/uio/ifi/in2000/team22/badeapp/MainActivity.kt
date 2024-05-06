@@ -10,12 +10,15 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesRepository
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import no.uio.ifi.in2000.team22.badeapp.data.location.UserLocationRepository
 import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
+import no.uio.ifi.in2000.team22.badeapp.persistence.FavoritesDatabase
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesScreen
+import no.uio.ifi.in2000.team22.badeapp.ui.screens.favorites.FavoritesViewModel
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreen
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.home.HomeScreenViewModel
 import no.uio.ifi.in2000.team22.badeapp.ui.screens.search.SearchScreen
@@ -27,12 +30,18 @@ import no.uio.ifi.in2000.team22.badeapp.ui.theme.BadeappTheme
 class MainActivity : ComponentActivity() {
     private lateinit var swimspotsRepository: SwimspotsRepository
     private lateinit var locationRepository: UserLocationRepository
+    private lateinit var favoritesRepository: FavoritesRepository
+    private lateinit var favoritesDatabase: FavoritesDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
         swimspotsRepository = SwimspotsRepository(applicationContext)
+
+        favoritesDatabase = FavoritesDatabase.getDatabase(applicationContext)
+        favoritesRepository = FavoritesRepository(favoritesDatabase.favoritesDao())
+
         locationRepository = UserLocationRepository(applicationContext)
         locationRepository.startLocationUpdates()
 
@@ -56,16 +65,30 @@ class MainActivity : ComponentActivity() {
                             )
                             HomeScreen(navController, homeViewModel)
                         }
-                        composable("favorites") { FavoritesScreen(navController) }
+                        composable("favorites") {
+                            val favoritesViewModel: FavoritesViewModel = viewModel(
+                                factory = FavoritesViewModel.provideFactory(
+                                    favoritesRepository,
+                                    swimspotsRepository
+                                )
+                            )
+                            FavoritesScreen(navController, favoritesViewModel, swimspotsRepository)
+                        }
                         composable("search") {
                             val searchViewModel: SearchScreenViewModel = viewModel(
-                                factory = SearchScreenViewModel.provideFactory(swimspotsRepository)
+                                factory = SearchScreenViewModel.provideFactory(
+                                    swimspotsRepository,
+                                    favoritesRepository,
+                                    locationRepository
+                                )
                             )
                             SearchScreen(navController, searchViewModel)
                         }
                         composable("swimspot/{swimspotId}") {
                             val swimspotViewModel: SwimspotViewModel = viewModel(
-                                factory = SwimspotViewModel.provideFactory(swimspotsRepository)
+                                factory = SwimspotViewModel.provideFactory(
+                                    swimspotsRepository,
+                                    favoritesRepository)
                             )
                             SwimspotScreen(navController, swimspotViewModel)
                         }
