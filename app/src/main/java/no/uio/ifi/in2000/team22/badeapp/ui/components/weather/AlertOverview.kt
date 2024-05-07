@@ -266,17 +266,16 @@ fun AlertView(alert: Alert, expanded: Boolean, onAlertClick: () -> Unit) {
                     Column(
                         modifier = Modifier.padding(10.dp, 0.dp)
                     ) {
-                        val endTime = Instant
-                            .parse(alert.eventEndingTime.toString())
-                            .atZone(ZoneId.of("Europe/Oslo"))
-                        Text(
-                            style = MaterialTheme.typography.bodySmall,
-                            text = "Gyldig til " +
-                                    "${endTime.dayOfMonth}.${endTime.monthValue}.${endTime.year}, " +
-                                    "kl.${endTime.hour}",
-                            overflow = TextOverflow.Ellipsis
-                        )
-
+                        if (alert.eventEndingTime != null) {
+                            val endTime = alert.eventEndingTime.atZone(ZoneId.of("Europe/Oslo"))
+                            Text(
+                                style = MaterialTheme.typography.bodySmall,
+                                text = "Gyldig til " +
+                                        "${endTime.dayOfMonth}.${endTime.monthValue}.${endTime.year}, " +
+                                        "kl.${endTime.hour}",
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                         Text(
                             style = MaterialTheme.typography.bodyMedium,
                             text = alert.description,

@@ -57,7 +57,7 @@ class MetAlertDataSource {
     //private val path = "weatherapi/metalerts/2.0/test.json" // Test Path
     //private val path = "weatherapi/metalerts/2.0/current.json"
 
-    private val endpoint = MetAPI.MetAlerts.TEST_ENDPOINT
+    private val endpoint = MetAPI.MetAlerts.CURRENT_ENDPOINT
 
     private val client =
         HttpClient {
@@ -94,6 +94,7 @@ class MetAlertDataSource {
     private fun toAlerts(metAlert: MetAlert): List<Alert> {
         val list: List<Alert> =
             metAlert.features.map {
+                Log.d("MetAlerts", "${it.properties.eventEndingTime}")
                 Alert(
                     geographicArea = if (it.geometry.type.lowercase() == "polygon") { // Type is Polygon
                         mutableListOf(it.geometry.coordinates as List<List<Double>>)
@@ -108,8 +109,12 @@ class MetAlertDataSource {
                     description = it.properties.description,
                     event = it.properties.event,
                     eventAwarenessName = it.properties.eventAwarenessName,
-                    eventEndingTime = ZonedDateTime.parse(it.properties.eventEndingTime)
-                        .toInstant(),
+                    eventEndingTime = if (it.properties.eventEndingTime != null) {
+                        ZonedDateTime.parse(it.properties.eventEndingTime)
+                            .toInstant()
+                    } else {
+                        null
+                    },
                     instruction = it.properties.instruction,
                     severity = it.properties.severity,
                     title = it.properties.title,
