@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
@@ -30,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -242,12 +244,14 @@ fun AlertView(alert: Alert, expanded: Boolean, onAlertClick: () -> Unit) {
                 horizontalArrangement = Arrangement.Center
             ) {
                 AlertIcon(alert = alert, modifier = Modifier.padding(12.dp))
-                Column {
+                Column(
+                    modifier = Modifier.fillMaxWidth().weight(1f)
+                ) {
                     Text(
                         text = alert.eventAwarenessName,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight(600),
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                     Text(
                         text = "${alert.riskMatrixColor.norsk} nivå",
@@ -255,6 +259,15 @@ fun AlertView(alert: Alert, expanded: Boolean, onAlertClick: () -> Unit) {
                         overflow = TextOverflow.Ellipsis
                     )
                 }
+
+                val stateIcon =
+                    if (expanded) { Icons.Default.KeyboardArrowUp }
+                    else { Icons.Default.KeyboardArrowDown }
+                Icon(
+                    imageVector = stateIcon,
+                    contentDescription = "Lukk/åpne varsel",
+                    modifier = Modifier.padding(10.dp)
+                )
             }
 
             val mod = if (expanded) Modifier.height(IntrinsicSize.Max) else Modifier.height(0.dp)
@@ -295,6 +308,8 @@ fun AlertView(alert: Alert, expanded: Boolean, onAlertClick: () -> Unit) {
                             text = alert.instruction,
                             overflow = TextOverflow.Ellipsis
                         )
+
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
                 }
             }

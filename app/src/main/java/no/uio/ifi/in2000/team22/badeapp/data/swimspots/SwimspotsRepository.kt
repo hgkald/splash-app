@@ -39,10 +39,23 @@ class SwimspotsRepository(private val context: Context) {
     }
 
     /**
-     * Returns true if distance parameter in swimspots are calculated from a certain point
+     * Returns true if old location is more than 250m away from current location
+     *  or if distances have not previously been calculated
      */
-    fun swimspotshaveDistance(): Boolean {
-        return swimspotsDistanceFrom != null
+    private fun shouldRecalculateDistance(lat: Double, lon: Double): Boolean {
+        val results: FloatArray = floatArrayOf(0F)
+        return if (swimspotsDistanceFrom != null) {
+            Location.distanceBetween(
+                swimspotsDistanceFrom!!.first,
+                swimspotsDistanceFrom!!.second,
+                lat,
+                lon,
+                results
+            )
+            results[0] > 250
+        } else {
+            true
+        }
     }
 
     /**
@@ -51,7 +64,7 @@ class SwimspotsRepository(private val context: Context) {
      * @param latitude
      * @param longitude
      */
-    fun calculateDistancesFrom(
+    private fun calculateDistancesFrom(
         latitude: Double,
         longitude: Double,
     ){
@@ -83,8 +96,9 @@ class SwimspotsRepository(private val context: Context) {
         longitude: Double,
         limit: Int = swimspots.size
     ): List<Swimspot> {
-        if (!swimspotshaveDistance()) {
+        if (shouldRecalculateDistance(latitude, longitude)) {
             calculateDistancesFrom(latitude, longitude)
+            Log.d("SwimspotsRepository", "Distances (re)calculated for $latitude, $longitude")
         }
         val swimspotsSorted = try {
             swimspots

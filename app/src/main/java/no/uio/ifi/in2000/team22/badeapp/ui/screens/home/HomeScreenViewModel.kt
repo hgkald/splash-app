@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesRepository
 import no.uio.ifi.in2000.team22.badeapp.data.location.UserLocationRepository
 import no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi.LocationforecastDataSource
 import no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi.LocationforecastRepository
@@ -26,12 +27,14 @@ import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
 import no.uio.ifi.in2000.team22.badeapp.model.alerts.Alert
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
+import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 data class SwimSpotUiState(
-    val swimspotList: List<Swimspot> = emptyList<Swimspot>()// Swim Spot
+    val swimspotList: List<Swimspot> = emptyList<Swimspot>(),// Swim Spot
+    val favoritesList: List<Swimspot> = emptyList(),
 )
 
 data class WeatherUiState(
@@ -63,6 +66,7 @@ data class LocationUiState(
 
 class HomeScreenViewModel(
     private val swimspotsRepository: SwimspotsRepository,
+    private val favoritesRepository: FavoritesRepository,
     private val locationRepository: UserLocationRepository
 ) : ViewModel() {
     private val _swimSpotUiState = MutableStateFlow(SwimSpotUiState())
@@ -155,10 +159,6 @@ class HomeScreenViewModel(
             val lat = _mapUiState.value.homeLocation.latitude()
             val lon = _mapUiState.value.homeLocation.longitude()
 
-            _swimSpotUiState.update {
-                it.copy(swimspotList = swimspotsRepository.getAllSwimspots())
-            }
-
             _mapUiState.update { state ->
                 Log.i("HomeViewModel", "Updating map state")
                 state.copy(
@@ -174,12 +174,32 @@ class HomeScreenViewModel(
                 )
             }
 
-            _weatherUiState.update {
-                it.copy(
-                    weather = getCurrentWeather(lat, lon),
-                    metAlerts = getMetAlerts(lat, lon),
-                    weatherLocation = _mapUiState.value.homeLocation
-                )
+            launch {
+                _weatherUiState.update {
+                    it.copy(
+                        weather = getCurrentWeather(lat, lon),
+                        metAlerts = getMetAlerts(lat, lon),
+                        weatherLocation = _mapUiState.value.homeLocation
+                    )
+                }
+            }
+
+            launch {
+                favoritesRepository.allFavorites.collect { favoritesList ->
+                    val favoritesAsSwimspots = favoritesList.mapNotNull {
+                        swimspotsRepository.getSwimspotById(it.id.toString())
+                    }
+                    _swimSpotUiState.update {
+                        it.copy(favoritesList = favoritesAsSwimspots)
+                    }
+                    _swimSpotUiState.update {
+                        it.copy(swimspotList = swimspotsRepository.getAllSwimspots()
+                            .filterNot { swimspot ->
+                                favoritesList.contains(Favorite(swimspot.id))
+                            }
+                        )
+                    }
+                }
             }
         }
 
@@ -189,11 +209,16 @@ class HomeScreenViewModel(
     companion object {
         fun provideFactory(
             swimspotsRepository: SwimspotsRepository,
+            favoritesRepository: FavoritesRepository,
             locationRepository: UserLocationRepository
         ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return HomeScreenViewModel(swimspotsRepository, locationRepository) as T
+                    return HomeScreenViewModel(
+                        swimspotsRepository,
+                        favoritesRepository,
+                        locationRepository
+                    ) as T
                 }
             }
     }

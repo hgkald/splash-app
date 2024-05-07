@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
                                 factory =
                                 HomeScreenViewModel.provideFactory(
                                     swimspotsRepository,
+                                    favoritesRepository,
                                     locationRepository
                                 )
                             )

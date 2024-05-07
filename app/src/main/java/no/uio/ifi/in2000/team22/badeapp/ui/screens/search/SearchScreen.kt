@@ -6,26 +6,16 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -34,12 +24,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -50,11 +36,9 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -64,7 +48,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -73,7 +56,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
-import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimspotType
 import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.Screen
@@ -89,54 +71,17 @@ fun SearchScreen(
     val focusManager = LocalFocusManager.current
     val scrollState: LazyListState = rememberLazyListState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
 
     val searchUiState by searchScreenViewModel.searchUiState.collectAsState()
-    val locationUiState = searchScreenViewModel.locationUiState.collectAsState()
 
-    val swimspots = searchUiState.swimspots
-    val nearestSwimspots = searchUiState.nearestSwimspots
+    val visibleSwimspots = searchScreenViewModel.filteredSwimspots.collectAsState()
 
     val favorites = searchUiState.favorites
     val input = searchUiState.searchInput
 
-    var freshwaterOnly by remember { mutableStateOf(false) }
-    var saltwaterOnly by remember { mutableStateOf(false) }
-
-    var visibleSwimspots by remember { mutableStateOf(swimspots) }
-    visibleSwimspots =
-        if (input == "" && nearestSwimspots.isNotEmpty()) {
-            nearestSwimspots
-        } else {
-            swimspots
-        }
-
-    LaunchedEffect(freshwaterOnly, saltwaterOnly) {
-        visibleSwimspots =
-            if (freshwaterOnly && saltwaterOnly) {
-                visibleSwimspots
-                    .filter { swimspot ->
-                        swimspot.type in listOf(
-                            SwimspotType.FRESH,
-                            SwimspotType.SALT
-                        )
-                    }
-            } else if (!(freshwaterOnly || saltwaterOnly)) {
-                visibleSwimspots
-            } else {
-                visibleSwimspots
-                    .filter { swimspot -> if (freshwaterOnly) swimspot.type == SwimspotType.FRESH else true }
-                    .filter { swimspot -> if (saltwaterOnly) swimspot.type == SwimspotType.SALT else true }
-            }
-    }
-
-    val location = locationUiState.value.lastKnownLocation
-    LaunchedEffect(location) {
-        if (location != null) {
-            searchScreenViewModel.updateNearestSwimspots(location.latitude, location.longitude)
-        }
-    }
+    val freshwaterOnly = searchUiState.freshwaterOnly
+    val saltwaterOnly = searchUiState.saltwaterOnly
 
     Scaffold(
         topBar = {
@@ -191,7 +136,6 @@ fun SearchScreen(
 
     )
     {
-        //Column(modifier = Modifier.padding(it)) {
         LazyColumn(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.Start,
@@ -242,7 +186,7 @@ fun SearchScreen(
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
-            items(visibleSwimspots) { swimspot ->
+            items(visibleSwimspots.value) { swimspot ->
                 var isFavorite = favorites.contains(Favorite(swimspot.id))
                 val toggleFavorite =
                     if (favorites.isEmpty() || !isFavorite) {
@@ -258,16 +202,12 @@ fun SearchScreen(
                     }
                 val onFavoriteClick: () -> Unit = { toggleFavorite() }
 
-                Log.d("SearchScreen", "resultscard")
-
-                if (swimspot.name.startsWith(input, ignoreCase = true)) {
-                    SwimspotCard(
-                        navcontroller = navcontroller,
-                        swimspot = swimspot,
-                        isFavorite = isFavorite,
-                        onFavoriteClick = onFavoriteClick
-                    )
-                }
+                SwimspotCard(
+                    navcontroller = navcontroller,
+                    swimspot = swimspot,
+                    isFavorite = isFavorite,
+                    onFavoriteClick = onFavoriteClick
+                )
             }
         }
     }
@@ -307,13 +247,13 @@ fun SearchScreen(
                 ) {
 
                     FilterChip(
-                        onClick = { freshwaterOnly = !freshwaterOnly },
+                        onClick = { searchScreenViewModel.toggleFreshwaterOnly() },//freshwaterOnly = !freshwaterOnly },
                         label = { FilterChipText(text = "Ferskvann") },
                         selected = freshwaterOnly,
                         modifier = filterChipModifier
                     )
                     FilterChip(
-                        onClick = { saltwaterOnly = !saltwaterOnly },
+                        onClick = { searchScreenViewModel.toggleSaltwaterOnly()}, // saltwaterOnly = !saltwaterOnly },
                         label = { FilterChipText(text = "Saltvann") },
                         selected = saltwaterOnly,
                         modifier = filterChipModifier

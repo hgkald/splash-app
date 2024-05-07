@@ -5,11 +5,14 @@ import androidx.lifecycle.viewModelScope
 import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.mapbox.maps.extension.style.expressions.dsl.generated.distance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -17,13 +20,16 @@ import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesRepository
 import no.uio.ifi.in2000.team22.badeapp.data.location.UserLocationRepository
 import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
+import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimspotType
 import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 
 data class SearchUiState(
     val swimspots: List<Swimspot> = emptyList(),
     val favorites: List<Favorite> = emptyList(),
     val nearestSwimspots: List<Swimspot> = emptyList(),
-    val searchInput: String = ""
+    val searchInput: String = "",
+    val freshwaterOnly: Boolean = false,
+    val saltwaterOnly: Boolean = false
 )
 
 data class LocationUiState(
@@ -37,6 +43,7 @@ class SearchScreenViewModel(
     private val locationRepository: UserLocationRepository
 ) : ViewModel() {
     private val _searchUiState = MutableStateFlow(SearchUiState())
+    private var previousLocation: Location? = null
 
     val searchUiState: StateFlow<SearchUiState> = _searchUiState.asStateFlow()
     val locationUiState: StateFlow<LocationUiState> = locationRepository.observe()
@@ -45,7 +52,14 @@ class SearchScreenViewModel(
                 lastKnownLocation = it.lastKnownLocation,
                 locationPermissions = it.permissionGranted
             )
-        }.stateIn(
+        }
+        .onEach { uiState ->
+            Log.d("SearchScreenViewModel", uiState.lastKnownLocation.toString())
+            viewModelScope.launch {
+                uiState.lastKnownLocation?.let { updateNearestSwimspots(it.latitude, it.longitude) }
+            }
+        }
+        .stateIn(
             viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = LocationUiState()
@@ -53,9 +67,29 @@ class SearchScreenViewModel(
 
     val filteredSwimspots: StateFlow<List<Swimspot>> = searchUiState
         .map { uiState ->
-            uiState.swimspots.filter {
-                it.name.startsWith(uiState.searchInput, ignoreCase = true)
+            var result = uiState.swimspots
+
+            if (uiState.searchInput.isNotBlank()) {
+                result = result.filter {
+                    it.name.startsWith(uiState.searchInput, ignoreCase = true)
+                }
             }
+
+            result = when {
+                uiState.freshwaterOnly && uiState.saltwaterOnly -> {
+                    result
+                }
+                uiState.freshwaterOnly -> {
+                    result.filter { swimspot -> swimspot.type == SwimspotType.FRESH }
+                }
+                uiState.saltwaterOnly -> {
+                    result.filter { swimspot -> swimspot.type == SwimspotType.SALT }
+                }
+                else -> {
+                    result
+                }
+            }
+            result.sortedBy { it.distance }
         }
         .stateIn(
             scope = viewModelScope,
@@ -80,6 +114,14 @@ class SearchScreenViewModel(
                     currentState.copy(swimspots = swimspots)
                 }
             }
+            launch {
+                locationUiState.collect { uiState ->
+                    Log.d("SearchScreenViewModel", "Updating nearest swimspots (${uiState})")
+                    uiState.lastKnownLocation?.let { location ->
+                        updateNearestSwimspots(location.latitude, location.longitude)
+                    }
+                }
+            }
         }
     }
 
@@ -89,15 +131,25 @@ class SearchScreenViewModel(
         }
     }
 
+    fun toggleFreshwaterOnly() {
+        _searchUiState.update { currentState ->
+            currentState.copy(freshwaterOnly = !_searchUiState.value.freshwaterOnly)
+        }
+    }
+
+    fun toggleSaltwaterOnly() {
+        _searchUiState.update { currentState ->
+            currentState.copy(saltwaterOnly = !_searchUiState.value.saltwaterOnly)
+        }
+    }
+
     fun updateNearestSwimspots(lat: Double, lon: Double) {
         viewModelScope.launch {
-            Log.d("SearchViewModel", "Latest location not null, continuing")
+            Log.d("SearchViewModel", "updateNearestSwimspots()")
+            val nearestSwimspots = swimspotsRepository.getNearestSwimspots(lat, lon)
             _searchUiState.update {
                 it.copy(
-                    nearestSwimspots = swimspotsRepository.getNearestSwimspots(
-                        latitude = lat,
-                        longitude = lon
-                    )
+                    nearestSwimspots = nearestSwimspots
                 )
             }
         }

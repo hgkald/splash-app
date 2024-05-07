@@ -130,7 +130,7 @@ fun TemperatureAndIcon(weather: Weather) {
 @Composable
 fun PrecipitationText(weather: Weather) {
     if (weather.precipitationNextHour != null) {
-        var precipText = "Ingen nedbør forventet"
+        var precipText = "Ingen nedbør forventet neste time"
         if (weather.precipitationNextHour > 0) {
             precipText = "${weather.precipitationNextHour} mm forventet neste time"
                 .replace(".", ",")
@@ -146,36 +146,3 @@ fun PrecipitationText(weather: Weather) {
         )
     }
 }
-
-
-@Composable
-fun MetAlertInfo(alerts: List<Alert>) {
-    Card(
-        modifier = Modifier
-            .padding(12.dp)
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            if (alerts.isNotEmpty()) {
-                val alert = alerts[alerts.lastIndex]
-                AlertIcon(alert = alert, modifier = Modifier.padding(12.dp))
-                Column {
-                    Text(
-                        text = alert.eventAwarenessName,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight(600)
-                    )
-                    Text(
-                        text = "${alert.riskMatrixColor.norsk} nivå",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-        }
-    }
-}
-

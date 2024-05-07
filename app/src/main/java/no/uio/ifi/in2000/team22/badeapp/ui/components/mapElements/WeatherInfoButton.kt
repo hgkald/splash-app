@@ -51,7 +51,7 @@ fun WeatherInfoButton(
                 WeatherIcon(
                     weather = weather,
                     modifier = Modifier
-                        .padding(top = 0.dp, bottom = 5.dp)
+                        .padding(5.dp)
                 )
                 if (alerts.isNotEmpty()) {
                     AlertIcon(

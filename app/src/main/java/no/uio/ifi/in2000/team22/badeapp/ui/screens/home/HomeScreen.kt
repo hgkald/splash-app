@@ -40,12 +40,20 @@ import com.mapbox.maps.MapInitOptions
 import com.mapbox.maps.MapboxExperimental
 import com.mapbox.maps.Style
 import com.mapbox.maps.dsl.cameraOptions
+import com.mapbox.maps.extension.compose.MapEffect
 import com.mapbox.maps.extension.compose.MapEvents
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.MapViewportState
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotationGroup
+import com.mapbox.maps.extension.style.expressions.dsl.generated.get
 import com.mapbox.maps.extension.style.expressions.dsl.generated.literal
+import com.mapbox.maps.extension.style.layers.addLayer
+import com.mapbox.maps.extension.style.layers.generated.symbolLayer
+import com.mapbox.maps.extension.style.layers.properties.generated.IconAnchor
+import com.mapbox.maps.extension.style.layers.properties.generated.TextAnchor
+import com.mapbox.maps.extension.style.sources.addSource
+import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.annotation.AnnotationConfig
 import com.mapbox.maps.plugin.annotation.AnnotationSourceOptions
@@ -56,7 +64,6 @@ import com.mapbox.maps.plugin.locationcomponent.generated.LocationComponentSetti
 import com.mapbox.maps.plugin.scalebar.generated.ScaleBarSettings
 import no.uio.ifi.in2000.team22.badeapp.R
 import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppBottomAppBar
-import no.uio.ifi.in2000.team22.badeapp.ui.components.BadeAppTopAppBar
 import no.uio.ifi.in2000.team22.badeapp.ui.components.Screen
 import no.uio.ifi.in2000.team22.badeapp.ui.components.mapElements.PanToHomeButton
 import no.uio.ifi.in2000.team22.badeapp.ui.components.mapElements.PanToLocationButton
@@ -104,7 +111,13 @@ fun HomeScreen(
     val marker =
         BitmapFactory.decodeResource(
             LocalContext.current.resources,
-            R.drawable.ic_swimspot_location_on
+            R.drawable.location_blue_42
+        )
+
+    val favoriteMarker =
+        BitmapFactory.decodeResource(
+            LocalContext.current.resources,
+            R.drawable.favorite_blueheart_42
         )
 
     val mapViewportState = rememberMapViewportState {
@@ -217,6 +230,33 @@ fun HomeScreen(
                     enabled = true
                 }
             ) {
+
+                //Shows text labels for swimspots
+                MapEffect(Unit) { mapView ->
+                        mapView.mapboxMap.getStyle { style ->
+                            style.addSource(
+                                geoJsonSource("swimspots") {
+                                    data("asset://swimspots.geojson")
+                                }
+                            )
+                            style.addLayer(
+                                symbolLayer("swimspot_labels", "swimspots") {
+                                    textField(get { literal("name") })
+                                    textAllowOverlap(false)
+                                    textAnchor(TextAnchor.TOP)
+                                    textHaloColor(Color.WHITE)
+                                    textHaloBlur(1.0)
+                                    textHaloWidth(0.5)
+                                    textMaxWidth(12.0)
+                                    textFont(listOf("Roboto Medium"))
+                                    textSize(14.0)
+                                    minZoom(11.0)
+                                }
+                            )
+                        }
+                    }
+
+                //Markers for regular swimspots
                 PointAnnotationGroup(
                     annotations = swimSpotUiState.value.swimspotList.map { swimspot ->
                         PointAnnotationOptions()
@@ -228,20 +268,44 @@ fun HomeScreen(
                                     JsonElement::class.java
                                 )
                             )
+                            .withIconAnchor(IconAnchor.BOTTOM)
                     },
                     annotationConfig = AnnotationConfig(
                         annotationSourceOptions = AnnotationSourceOptions(
                             clusterOptions = ClusterOptions(
                                 textColor = Color.WHITE, // Will not be applied as textColorExpression has been set
-                                textSize = 20.0,
-                                circleRadiusExpression = literal(25.0),
+                                textSize = 16.0,
+                                circleRadiusExpression = literal(20.0),
                                 colorLevels = listOf(
-                                    Pair(0, Color.parseColor("#3947A3"))
+                                    Pair(0, Color.parseColor("#3e385c"))
                                 ),
-                                clusterMaxZoom = 10
-                            )
+                                clusterMaxZoom = 10,
+                            ),
+
                         )
                     ),
+                    onClick = {
+                        val id = Gson().fromJson(it.getData(), SwimspotId::class.java).id
+                        Log.d("HomeScreen", "Navigating to swimspot: $id")
+                        navcontroller.run { navigate("swimspot/${id}") }
+                        true
+                    }
+                )
+
+                //Markers for favourite swimspots
+                PointAnnotationGroup(
+                    annotations = swimSpotUiState.value.favoritesList.map { favorite ->
+                        PointAnnotationOptions()
+                            .withPoint(Point.fromLngLat(favorite.lon, favorite.lat))
+                            .withIconImage(favoriteMarker)
+                            .withData(
+                                Gson().fromJson(
+                                    "{id: ${favorite.id}}",
+                                    JsonElement::class.java
+                                )
+                            )
+                            .withIconAnchor(IconAnchor.BOTTOM)
+                    },
                     onClick = {
                         val id = Gson().fromJson(it.getData(), SwimspotId::class.java).id
                         Log.d("HomeScreen", "Navigating to swimspot: $id")
@@ -337,6 +401,4 @@ fun HomeScreen(
             )
         }
     }
-
-
 }
