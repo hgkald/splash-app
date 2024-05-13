@@ -3,6 +3,8 @@ package no.uio.ifi.in2000.team22.badeapp.data.locationforecastApi
 import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
@@ -11,6 +13,7 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import io.ktor.serialization.gson.gson
 import no.uio.ifi.in2000.team22.badeapp.data.MetAPI
+import no.uio.ifi.in2000.team22.badeapp.data.round
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.Locationforecast
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
 
@@ -29,14 +32,20 @@ class LocationforecastDataSource {
             install(ContentNegotiation) {
                 gson()
             }
+
+            install(HttpTimeout) {
+                requestTimeoutMillis = 5000
+            }
+
+            install(HttpCache)
         }
 
     private suspend fun fetch(lat: Double, lon: Double): Locationforecast? {
         return try {
             val response = client.get {
                 url {
-                    parameters.append("lat", lat.toString())
-                    parameters.append("lon", lon.toString())
+                    parameters.append("lat", lat.round(3).toString())
+                    parameters.append("lon", lon.round(3).toString())
                 }
             }
             Log.e("LocationforecastDataSource", "Fetching new location forecast")

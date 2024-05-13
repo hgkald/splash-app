@@ -4,6 +4,8 @@ import android.util.Log
 import com.google.gson.annotations.SerializedName
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
@@ -12,6 +14,7 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import io.ktor.serialization.gson.gson
 import no.uio.ifi.in2000.team22.badeapp.data.MetAPI
+import no.uio.ifi.in2000.team22.badeapp.data.round
 import no.uio.ifi.in2000.team22.badeapp.model.alerts.Alert
 import no.uio.ifi.in2000.team22.badeapp.model.alerts.RiskMatrixColor
 import java.time.ZonedDateTime
@@ -57,7 +60,7 @@ class MetAlertDataSource {
     //private val path = "weatherapi/metalerts/2.0/test.json" // Test Path
     //private val path = "weatherapi/metalerts/2.0/current.json"
 
-    private val endpoint = MetAPI.MetAlerts.CURRENT_ENDPOINT
+    private val endpoint = MetAPI.MetAlerts.TEST_ENDPOINT
 
     private val client =
         HttpClient {
@@ -73,6 +76,12 @@ class MetAlertDataSource {
             install(ContentNegotiation) {
                 gson()
             }
+
+            install(HttpTimeout) {
+                requestTimeoutMillis = 5000
+            }
+
+            install(HttpCache)
         }
 
     private suspend fun fetchBody(): MetAlert {
@@ -135,8 +144,8 @@ class MetAlertDataSource {
             val response = client.get {
                 url {
                     path(endpoint)
-                    parameters.append("lat", lat.toString())
-                    parameters.append("lon", long.toString())
+                    parameters.append("lat", lat.round(3).toString())
+                    parameters.append("lon", long.round(3).toString())
                 }
             }
             val body = response.body<MetAlert>()

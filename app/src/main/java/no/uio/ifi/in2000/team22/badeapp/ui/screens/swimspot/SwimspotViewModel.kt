@@ -27,7 +27,6 @@ import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.Swimspot
 import no.uio.ifi.in2000.team22.badeapp.model.swimspots.SwimspotType
 import no.uio.ifi.in2000.team22.badeapp.model.transport.TransportCategory
-import no.uio.ifi.in2000.team22.badeapp.persistence.Favorite
 
 data class SwimspotUiState(
     val swimspot: Swimspot? = null,
@@ -79,7 +78,7 @@ class SwimspotViewModel(
             val swimspot = _swimspotUiState.value.swimspot ?: return@launch
 
             _weatherUiState.update {
-                frostRepo.fetchWaterTemperature(swimspot.lat, swimspot.lon)
+//                frostRepo.fetchWaterTemperature(swimspot.lat, swimspot.lon)
 
                 it.copy(
                     alerts = alertRepo.getAlertsForPosition(
@@ -150,7 +149,11 @@ class SwimspotViewModel(
                     extras: CreationExtras
                 ): T {
                     val savedStateHandle = extras.createSavedStateHandle()
-                    return SwimspotViewModel(savedStateHandle, swimspotsRepository, favoritesRepository) as T
+                    return SwimspotViewModel(
+                        savedStateHandle,
+                        swimspotsRepository,
+                        favoritesRepository
+                    ) as T
                 }
             }
     }
