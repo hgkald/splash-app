@@ -67,7 +67,7 @@ class SwimspotsRepository(private val context: Context) {
     private fun calculateDistancesFrom(
         latitude: Double,
         longitude: Double,
-    ){
+    ) {
         try {
             swimspots
                 .map {
@@ -108,7 +108,6 @@ class SwimspotsRepository(private val context: Context) {
         } catch (e: Exception) {
             Log.d("SwimspotsRepo", "Exception at getNearestSwimspots()")
             swimspots
-                .subList(0, limit - 1)
         }
         Log.d("SwimspotsRepo", "Returning list of nearest swimspots: ${swimspotsSorted.size}")
 
