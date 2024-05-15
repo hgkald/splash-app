@@ -16,6 +16,9 @@ import no.uio.ifi.in2000.team22.badeapp.data.MetAPI
 import no.uio.ifi.in2000.team22.badeapp.data.round
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.Locationforecast
 import no.uio.ifi.in2000.team22.badeapp.model.forecast.Weather
+import no.uio.ifi.in2000.team22.badeapp.model.forecast.nullWeather
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class LocationforecastDataSource {
     private val client =
@@ -61,37 +64,44 @@ class LocationforecastDataSource {
         //Returns a Weather object based in the current time
         // lat and lon: latitude and longitude
         // hourOffset: Weather this many hours into the future.
-        if (hourOffset > 54) {
-            Log.w(
-                "LocationforecastDataSource",
-                "fetchWeather() might return null Weather parameters (hourOffset > 54)"
-            )
-        }
 
         try {
             val forecast = fetch(lat, lon)
-            val timeseries = forecast?.properties?.timeseries?.get(hourOffset)
-            return Weather(
-                time = timeseries?.time,
-                airTemperature = timeseries?.data?.instant?.details?.air_temperature,
-                symbolCode = timeseries?.data?.next_1_hours?.summary?.symbol_code,
-                windSpeed = timeseries?.data?.instant?.details?.wind_speed,
-                windFromDirection = timeseries?.data?.instant?.details?.wind_from_direction,
-                uvIndex = timeseries?.data?.instant?.details?.ultraviolet_index_clear_sky,
-                precipitationNextHour = timeseries?.data?.next_1_hours?.details?.precipitation_amount
-            )
+            val timeseries = forecast?.properties?.timeseries
+            val forecastIndex =
+                if (timeseries.isNullOrEmpty())
+                    0
+                else
+                    timeseries.indexOfFirst {
+                        Instant.parse(it.time).isAfter(
+                            Instant.now().minus(30, ChronoUnit.MINUTES))
+                    }
+            val offset = forecastIndex + hourOffset
+
+            if (offset > 54) {
+                Log.w(
+                    "LocationforecastDataSource",
+                    "fetchWeather() might return null Weather parameters (hourOffset > 54)"
+                )
+            }
+
+            val seriesEntry = timeseries?.get(offset)
+            Log.i("LocationForecastDataSource", "Getting weather for offset $offset (after ${Instant.now()})")
+            return if (seriesEntry != null) {
+                Weather(
+                    time = Instant.parse(seriesEntry.time),
+                    airTemperature = seriesEntry.data?.instant?.details?.air_temperature,
+                    symbolCode = seriesEntry.data?.next_1_hours?.summary?.symbol_code,
+                    windSpeed = seriesEntry.data?.instant?.details?.wind_speed,
+                    windFromDirection = seriesEntry.data?.instant?.details?.wind_from_direction,
+                    uvIndex = seriesEntry.data?.instant?.details?.ultraviolet_index_clear_sky,
+                    precipitationNextHour = seriesEntry.data?.next_1_hours?.details?.precipitation_amount
+                )
+            } else nullWeather
         } catch (e: Exception) {
             Log.e("LocationforecastDataSource", e.message.toString())
             Log.e("LocationforecastDataSource", e.stackTrace.toString())
-            return Weather(
-                time = null,
-                airTemperature = null,
-                symbolCode = null,
-                windSpeed = null,
-                windFromDirection = null,
-                uvIndex = null,
-                precipitationNextHour = null
-            )
+            return nullWeather
         }
     }
 

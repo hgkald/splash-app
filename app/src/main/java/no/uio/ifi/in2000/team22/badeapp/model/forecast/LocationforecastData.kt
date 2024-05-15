@@ -40,7 +40,7 @@ data class Locationforecast(
         }
 
         data class TimeseriesEntry(
-            val time: String, //TODO: timestamp type
+            val time: String?,
             val data: Data?
         ) {
             data class Data(
