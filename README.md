@@ -11,19 +11,22 @@
 
 ## How to run 
 
-The codebase can be viewed using Android Studio. 
+The app can be run using Android Studio. 
 
 1. Download the codebase from Github.
 2. Open Android Studio. 
 3. Open project from the project root directory. 
+4. To run the app, either: 
+	* Run it inside an emulator in Android Studio, or 
+	* Connect Android Studio to a physical Android device. 
+ 
+Devices/emulators running API 26 or higher are supported by the app. 
 
-To view the app, run the app inside an emulator in Android Studio or connect Android Studio to an Android device. Devices/emulators running API 26 or higher are supported by the app. 
+## Demo video
 
-The following is a demo of the app on a device running API 34: 
+The following is a demo video on a device running API 34: 
 
-https://media.github.uio.no/user/8053/files/db2fd8cc-b325-4d0f-9ef5-a633c326dd0b
-
-
+https://media.github.uio.no/user/8053/files/340459ae-17eb-4bf3-8e0c-4eafd5a0423d
 
 ## Libraries and dependencies 
 
@@ -47,7 +50,7 @@ Splash uses Gradle as a build manager, in addition to the following libraries:
 
 - [Yr warning icons](https://github.com/nrkno/yr-warning-icons) © 2015 Yr/NRK 
 - [MET Weather API icons](https://github.com/metno/weathericons) © 2015-2017 Yr
-- Map icons (original images have been edited): 
+- Map icons (original images below have been edited): 
 	- Swimspot icon: [Icon by André Luiz Gollo](https://www.freepik.com/icon/location_13550550)
 	- Favorite icon: [Icon by André Luiz Gollo](https://www.freepik.com/icon/favorite_13550447)
 
