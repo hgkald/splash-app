@@ -118,10 +118,10 @@ class MetAlertDataSource {
                     description = it.properties.description,
                     event = it.properties.event,
                     eventAwarenessName = it.properties.eventAwarenessName,
-                    eventEndingTime = if (it.properties.eventEndingTime != null) {
+                    eventEndingTime = try {
                         ZonedDateTime.parse(it.properties.eventEndingTime)
                             .toInstant()
-                    } else {
+                    } catch (e: Exception) {
                         null
                     },
                     instruction = it.properties.instruction,

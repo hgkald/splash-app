@@ -66,7 +66,7 @@ fun WeatherInfoButton(
                 Text(
                     style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center,
-                    text = weather.airTemperature?.roundToInt().toString()
+                    text = weather.airTemperature.roundToInt().toString()
                         .replace(".", ",") + "\u00b0C",
                 )
             }

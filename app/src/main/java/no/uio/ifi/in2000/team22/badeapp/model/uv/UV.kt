@@ -1,7 +1,6 @@
 package no.uio.ifi.in2000.team22.badeapp.model.uv
 
 import androidx.compose.ui.graphics.Color
-import androidx.core.graphics.toColorInt
 import kotlin.math.roundToInt
 
 
@@ -42,16 +41,15 @@ fun doubleToUV(uvIndex: Double): UV {
  * @return An instance of Color
  * @see Color
  */
-
-fun uvToColor(uv: UV): Color {
-    return when (uv) {
-        UV.LOW -> Color("#94d171".toColorInt())
-        UV.MEDIUM -> Color("#ebd05b".toColorInt())
-        UV.HIGH -> Color("#cf3232".toColorInt())
-        UV.VERY_HIGH -> Color("#8c63b8".toColorInt())
-        UV.UNKNOWN -> Color.LightGray
-    }
-}
+//fun uvToColor(uv: UV): Color {
+//    return when (uv) {
+//        UV.LOW -> Color("#94d171".toColorInt())
+//        UV.MEDIUM -> Color("#ebd05b".toColorInt())
+//        UV.HIGH -> Color("#cf3232".toColorInt())
+//        UV.VERY_HIGH -> Color("#8c63b8".toColorInt())
+//        UV.UNKNOWN -> Color.LightGray
+//    }
+//}
 
 fun uvToNorwegian(uv: UV): String {
     return when (uv) {

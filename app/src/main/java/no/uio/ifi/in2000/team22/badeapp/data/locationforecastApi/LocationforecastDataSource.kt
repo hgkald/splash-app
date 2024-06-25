@@ -43,6 +43,14 @@ class LocationforecastDataSource {
             install(HttpCache)
         }
 
+    /**
+     * Fetches the current forecast for the given coordinates
+     *
+     * @param lat latitude
+     * @param lon longitude
+     *
+     * @return An instance of [Locationforecast], or null if no forecast is returned
+     */
     private suspend fun fetch(lat: Double, lon: Double): Locationforecast? {
         return try {
             val response = client.get {
@@ -60,6 +68,16 @@ class LocationforecastDataSource {
         }
     }
 
+    /**
+     * Converts the [Locationforecast] object from [fetch] and extracts the necessary information
+     *
+     * @param lat latitude
+     * @param lon longitude
+     * @param hourOffset the hour offset from the current time, default is 0
+     *
+     * @return An instance of [Weather], where each value can be null.
+     *
+     */
     suspend fun fetchWeather(lat: Double, lon: Double, hourOffset: Int = 0): Weather {
         //Returns a Weather object based in the current time
         // lat and lon: latitude and longitude
@@ -74,7 +92,8 @@ class LocationforecastDataSource {
                 else
                     timeseries.indexOfFirst {
                         Instant.parse(it.time).isAfter(
-                            Instant.now().minus(30, ChronoUnit.MINUTES))
+                            Instant.now().minus(30, ChronoUnit.MINUTES)
+                        )
                     }
             val offset = forecastIndex + hourOffset
 
@@ -86,7 +105,10 @@ class LocationforecastDataSource {
             }
 
             val seriesEntry = timeseries?.get(offset)
-            Log.i("LocationForecastDataSource", "Getting weather for offset $offset (after ${Instant.now()})")
+            Log.i(
+                "LocationForecastDataSource",
+                "Getting weather for offset $offset (after ${Instant.now()})"
+            )
             return if (seriesEntry != null) {
                 Weather(
                     time = Instant.parse(seriesEntry.time),

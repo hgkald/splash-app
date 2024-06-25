@@ -31,6 +31,7 @@ class UserLocationRepository(
 
     private var _locationState = MutableStateFlow(LocationState())
 
+    //This callback handles new location results.
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(p0: LocationResult) {
             val newLocation = p0.lastLocation
@@ -45,14 +46,20 @@ class UserLocationRepository(
                 }
             }
 
+            //If the new location is null, then ignore the new result
             if (oldLocation != null && newLocation == null) {
                 return
             }
 
+            //If the old location is null, then update the location
             if (oldLocation == null) {
                 updateLocation()
             }
 
+            /*
+            Only update location if both is not null, and the distance between
+            the points is more then 200 meters.
+            */
             if (oldLocation != null &&
                 newLocation != null &&
                 oldLocation.distanceTo(newLocation) > 200
@@ -63,6 +70,9 @@ class UserLocationRepository(
         }
     }
 
+    /**
+     * Returns a stateflow of the users given location
+     */
     fun observe(): StateFlow<LocationState> = _locationState.asStateFlow()
 
     /**
@@ -92,6 +102,9 @@ class UserLocationRepository(
         return (fineLocation || coarseLocation)
     }
 
+    /**
+     * This starts the location updates, and fetches a new location every 5 seconds.
+     */
     @SuppressLint("MissingPermission")
     fun startLocationUpdates() {
         val locationRequest = LocationRequest.Builder(
@@ -108,6 +121,9 @@ class UserLocationRepository(
         }
     }
 
+    /**
+     * This stops the location updates
+     */
     fun stopLocationUpdates() {
         locationClient.removeLocationUpdates(locationCallback)
     }

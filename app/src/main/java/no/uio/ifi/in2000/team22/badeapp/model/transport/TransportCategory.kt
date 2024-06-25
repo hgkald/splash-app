@@ -2,14 +2,18 @@ package no.uio.ifi.in2000.team22.badeapp.model.transport
 
 import no.uio.ifi.in2000.team22.badeapp.R
 
-enum class TransportCategory(vararg category: String) {
-    BUS("onstreetBus", "busStation", "coachStation"),
-    TRAM("onstreetTram", "tramStation"),
-    RAIL("railStation"),
-    METRO("metroStation"),
-    BOAT("harbourPort", "ferryPort", "ferryStop");
+enum class TransportCategory {
+    BUS,
+    TRAM,
+    RAIL,
+    METRO,
+    BOAT;
 
     companion object {
+
+        /**
+         * Converts a [TransportCategory] to the corresponding drawable
+         */
         fun toDrawable(category: TransportCategory): Int {
             return when (category) {
                 BUS -> R.drawable.transport_category_bus_24
@@ -20,6 +24,14 @@ enum class TransportCategory(vararg category: String) {
             }
         }
 
+        /**
+         * Converts a string into the corresponding [TransportCategory].
+         *
+         * @param category a string from the EnTur API.
+         *
+         * @return An instance of [TransportCategory], or null if the given string does not
+         * match any transport category.
+         */
         fun fromString(category: String): TransportCategory? {
             return when (category) {
                 "onstreetBus", "busStation", "coachStation" -> BUS
@@ -31,6 +43,11 @@ enum class TransportCategory(vararg category: String) {
             }
         }
 
+        /**
+         * Converts a [TransportCategory] to a string in norwegian
+         *
+         * @return The corresponding string in norwegian.
+         */
         fun toNorwegian(category: TransportCategory): String {
             return when (category) {
                 BUS -> "Buss"

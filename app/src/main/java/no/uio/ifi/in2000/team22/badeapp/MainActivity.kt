@@ -8,12 +8,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesRepository
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import no.uio.ifi.in2000.team22.badeapp.data.favorites.FavoritesRepository
 import no.uio.ifi.in2000.team22.badeapp.data.location.UserLocationRepository
 import no.uio.ifi.in2000.team22.badeapp.data.swimspots.SwimspotsRepository
 import no.uio.ifi.in2000.team22.badeapp.persistence.FavoritesDatabase
@@ -51,7 +50,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val viewModelStore = checkNotNull(LocalViewModelStoreOwner.current)
                     val navController = rememberNavController()
 
                     NavHost(navController = navController, startDestination = "home") {
@@ -89,7 +87,8 @@ class MainActivity : ComponentActivity() {
                             val swimspotViewModel: SwimspotViewModel = viewModel(
                                 factory = SwimspotViewModel.provideFactory(
                                     swimspotsRepository,
-                                    favoritesRepository)
+                                    favoritesRepository
+                                )
                             )
                             SwimspotScreen(navController, swimspotViewModel)
                         }

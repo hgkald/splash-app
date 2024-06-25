@@ -1,5 +1,8 @@
 package no.uio.ifi.in2000.team22.badeapp.model.swimspots
 
+/**
+ * Contains information about each swimspot. [distance] is the only value that can be null
+ */
 data class Swimspot(
     val id: Int,
     val name: String,
