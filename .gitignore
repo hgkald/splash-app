@@ -1,3 +1,7 @@
+app/src/main/res/values/developer-config.xml
+app/src/main/res/values/strings.xml
+gradle.properties
+
 .DS_Store
 
 # Created by https://www.toptal.com/developers/gitignore/api/androidstudio,kotlin,gradle
