@@ -22,11 +22,15 @@ The app can be run using Android Studio.
  
 Devices/emulators running API 26 or higher are supported by the app. 
 
-## Demo video
+## Demo videos
 
-The following is a demo video on a device running API 34: 
+The following videos show the app on a device running API 34: 
 
-https://media.github.uio.no/user/8053/files/340459ae-17eb-4bf3-8e0c-4eafd5a0423d
+
+https://github.com/hgkald/splash-app/assets/17885726/6c2e1c81-6426-4b1a-bfd2-30feb6019caf
+
+
+https://github.com/hgkald/splash-app/assets/17885726/d585fecb-731a-435d-af04-4708310d367d
 
 ## Libraries and dependencies 
 
