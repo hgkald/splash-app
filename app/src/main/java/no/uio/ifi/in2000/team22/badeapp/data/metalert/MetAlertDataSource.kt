@@ -60,7 +60,7 @@ class MetAlertDataSource {
     //private val path = "weatherapi/metalerts/2.0/test.json" // Test Path
     //private val path = "weatherapi/metalerts/2.0/current.json"
 
-    private val endpoint = MetAPI.MetAlerts.TEST_ENDPOINT
+    private val endpoint = MetAPI.MetAlerts.CURRENT_ENDPOINT
 
     private val client =
         HttpClient {
